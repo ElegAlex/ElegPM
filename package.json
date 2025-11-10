@@ -73,7 +73,7 @@
                   "js": "./src/renderer/main.tsx",
                   "name": "main_window",
                   "preload": {
-                    "js": "./src/preload.ts"
+                    "js": "./src/preload/index.ts"
                   }
                 }
               ]
