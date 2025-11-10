@@ -1,6 +1,6 @@
 import { contextBridge, ipcRenderer } from 'electron';
-import { Project, ProjectInput } from '../renderer/types/project';
-import { Task, TaskInput } from '../renderer/types/task';
+import type { Project, ProjectInput } from '../renderer/types/project';
+import type { Task, TaskInput } from '../renderer/types/task';
 
 // Define the API that will be exposed to the renderer process
 export interface ElectronAPI {
