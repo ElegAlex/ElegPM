@@ -4,6 +4,26 @@ module.exports = {
     executableName: 'GestionProjet',
     asar: true,
     // Icon will be added later if available
+    ignore: [
+      /^\/\.webpack($|\/)/,
+      /^\/out($|\/)/,
+    ],
+    // Rebuild native modules for target platform
+    afterCopy: [
+      (buildPath, electronVersion, platform, arch, callback) => {
+        const { exec } = require('child_process');
+        const rebuildCmd = `npm rebuild better-sqlite3 --build-from-source --target=${electronVersion} --arch=${arch} --dist-url=https://electronjs.org/headers`;
+        console.log(`Rebuilding better-sqlite3 for ${platform}-${arch}...`);
+        exec(rebuildCmd, { cwd: buildPath }, (error) => {
+          if (error) {
+            console.error('Rebuild error:', error);
+            return callback(error);
+          }
+          console.log('better-sqlite3 rebuild successful!');
+          callback();
+        });
+      }
+    ],
   },
   rebuildConfig: {},
   makers: [
@@ -30,6 +50,10 @@ module.exports = {
     },
   ],
   plugins: [
+    {
+      name: '@electron-forge/plugin-auto-unpack-natives',
+      config: {},
+    },
     {
       name: '@electron-forge/plugin-webpack',
       config: {

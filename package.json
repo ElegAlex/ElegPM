@@ -7,8 +7,9 @@
   "scripts": {
     "start": "electron-forge start",
     "package": "electron-forge package",
-    "make": "electron-forge make",
+    "make": "npm run rebuild && electron-forge make",
     "publish": "electron-forge publish",
+    "rebuild": "electron-rebuild -f -w better-sqlite3",
     "lint": "eslint --ext .ts,.tsx .",
     "lint:fix": "eslint --ext .ts,.tsx . --fix",
     "typecheck": "tsc --noEmit",
@@ -39,7 +40,11 @@
       "makers": [
         {
           "name": "@electron-forge/maker-zip",
-          "platforms": ["win32", "linux", "darwin"]
+          "platforms": [
+            "win32",
+            "linux",
+            "darwin"
+          ]
         },
         {
           "name": "@electron-forge/maker-deb",
@@ -100,6 +105,7 @@
     "@electron-forge/plugin-fuses": "^7.4.0",
     "@electron-forge/plugin-webpack": "^7.4.0",
     "@electron/fuses": "^1.8.0",
+    "@electron/rebuild": "^4.0.1",
     "@types/better-sqlite3": "^7.6.9",
     "@types/react": "^18.3.0",
     "@types/react-dom": "^18.3.0",
