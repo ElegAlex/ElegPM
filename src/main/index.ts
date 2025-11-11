@@ -78,6 +78,10 @@ function registerIPCHandlers() {
   // Import IPC handlers
   require('./ipc/projects');
   require('./ipc/tasks');
+  require('./ipc/milestones');
+  require('./ipc/resources');
+  require('./ipc/comments');
+  require('./ipc/attachments');
 
   // Test handler
   ipcMain.handle('ping', async () => {

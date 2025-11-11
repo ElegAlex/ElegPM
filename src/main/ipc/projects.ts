@@ -3,6 +3,7 @@ import { eq, like } from 'drizzle-orm';
 import { nanoid } from 'nanoid';
 import db from '../database/db';
 import { projects } from '../database/schema';
+import type { ProjectInput } from '../../renderer/types/project';
 
 // Get all projects
 ipcMain.handle('projects:getAll', async () => {
@@ -27,7 +28,7 @@ ipcMain.handle('projects:getById', async (_event, id: string) => {
 });
 
 // Create project
-ipcMain.handle('projects:create', async (_event, data: any) => {
+ipcMain.handle('projects:create', async (_event, data: ProjectInput) => {
   try {
     const newProject = {
       id: nanoid(),
@@ -53,9 +54,9 @@ ipcMain.handle('projects:create', async (_event, data: any) => {
 });
 
 // Update project
-ipcMain.handle('projects:update', async (_event, id: string, data: any) => {
+ipcMain.handle('projects:update', async (_event, id: string, data: Partial<ProjectInput>) => {
   try {
-    const updateData: any = {
+    const updateData = {
       ...data,
       updatedAt: new Date().toISOString(),
     };

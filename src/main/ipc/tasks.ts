@@ -3,6 +3,7 @@ import { eq, and } from 'drizzle-orm';
 import { nanoid } from 'nanoid';
 import db from '../database/db';
 import { tasks } from '../database/schema';
+import type { TaskInput } from '../../renderer/types/task';
 
 // Get all tasks (optionally filtered by project)
 ipcMain.handle('tasks:getAll', async (_event, projectId?: string) => {
@@ -36,7 +37,7 @@ ipcMain.handle('tasks:getById', async (_event, id: string) => {
 });
 
 // Create task
-ipcMain.handle('tasks:create', async (_event, data: any) => {
+ipcMain.handle('tasks:create', async (_event, data: TaskInput) => {
   try {
     const newTask = {
       id: nanoid(),
@@ -67,12 +68,12 @@ ipcMain.handle('tasks:create', async (_event, data: any) => {
 });
 
 // Update task
-ipcMain.handle('tasks:update', async (_event, id: string, data: any) => {
+ipcMain.handle('tasks:update', async (_event, id: string, data: Partial<TaskInput>) => {
   try {
-    const updateData: any = {
+    const updateData = {
       ...data,
       updatedAt: new Date().toISOString(),
-    };
+    } as any;
 
     if (data.tags) {
       updateData.tags = JSON.stringify(data.tags);
