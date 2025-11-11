@@ -12,14 +12,10 @@ module.exports = {
     afterCopy: [
       (buildPath, electronVersion, platform, arch, callback) => {
         const { exec } = require('child_process');
-        const rebuildCmd = `npm rebuild better-sqlite3 --build-from-source --target=${electronVersion} --arch=${arch} --dist-url=https://electronjs.org/headers`;
-        console.log(`Rebuilding better-sqlite3 for ${platform}-${arch}...`);
-        exec(rebuildCmd, { cwd: buildPath }, (error) => {
-          if (error) {
-            console.error('Rebuild error:', error);
-            return callback(error);
-          }
-          console.log('better-sqlite3 rebuild successful!');
+        exec('npm rebuild better-sqlite3 --build-from-source', {
+          cwd: buildPath
+        }, (error) => {
+          if (error) console.error('Rebuild error:', error);
           callback();
         });
       }
@@ -72,6 +68,7 @@ module.exports = {
             },
           ],
         },
+        packageSourceMaps: false,
       },
     },
   ],
