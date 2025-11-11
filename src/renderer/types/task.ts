@@ -15,6 +15,7 @@ export interface Task {
   startDate?: string;
   endDate?: string;
   parentTaskId?: string;
+  milestoneId?: string;
   orderIndex?: number;
   tags?: string[];
   createdAt: string;
@@ -33,5 +34,6 @@ export interface TaskInput {
   startDate?: string;
   endDate?: string;
   parentTaskId?: string;
+  milestoneId?: string;
   tags?: string[];
 }

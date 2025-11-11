@@ -1,5 +1,6 @@
 module.exports = {
   entry: './src/main/index.ts',
+  target: 'electron-main',
   module: {
     rules: require('./webpack.rules'),
   },
@@ -10,5 +11,9 @@ module.exports = {
       '@main': require('path').resolve(__dirname, 'src/main'),
       '@renderer': require('path').resolve(__dirname, 'src/renderer'),
     },
+  },
+  node: {
+    __dirname: false,
+    __filename: false,
   },
 };

@@ -1,20 +1,28 @@
 import React, { useState, useEffect } from 'react';
-import { X } from 'lucide-react';
+import { X, Users } from 'lucide-react';
 import { useTasksStore } from '../stores/tasksStore';
 import { useProjectsStore } from '../stores/projectsStore';
+import { useMilestonesStore } from '../stores/milestonesStore';
+import { useResourcesStore } from '../stores/resourcesStore';
+import { useTaskAssignmentsStore } from '../stores/taskAssignmentsStore';
 import type { Task, TaskInput } from '../types/task';
 
 interface TaskFormProps {
   task?: Task | null;
   projectId?: string;
+  parentTaskId?: string | null;
   onClose: () => void;
 }
 
-export const TaskForm: React.FC<TaskFormProps> = ({ task, projectId, onClose }) => {
+export const TaskForm: React.FC<TaskFormProps> = ({ task, projectId, parentTaskId, onClose }) => {
   const { createTask, updateTask } = useTasksStore();
   const { projects, fetchProjects } = useProjectsStore();
   const { tasks, fetchTasks } = useTasksStore();
+  const { milestones, fetchMilestones } = useMilestonesStore();
+  const { resources, fetchResources } = useResourcesStore();
+  const { fetchAssignments, assignResourcesToTask } = useTaskAssignmentsStore();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [selectedResourceIds, setSelectedResourceIds] = useState<string[]>([]);
   const [formData, setFormData] = useState<TaskInput>({
     projectId: projectId || '',
     title: '',
@@ -26,7 +34,8 @@ export const TaskForm: React.FC<TaskFormProps> = ({ task, projectId, onClose }) 
     actualHours: undefined,
     startDate: '',
     endDate: '',
-    parentTaskId: undefined,
+    parentTaskId: parentTaskId || undefined,
+    milestoneId: undefined,
     tags: [],
   });
   const [tagInput, setTagInput] = useState('');
@@ -34,10 +43,27 @@ export const TaskForm: React.FC<TaskFormProps> = ({ task, projectId, onClose }) 
   useEffect(() => {
     fetchProjects();
     fetchTasks();
-  }, [fetchProjects, fetchTasks]);
+    fetchMilestones();
+    fetchResources();
+  }, [fetchProjects, fetchTasks, fetchMilestones, fetchResources]);
 
   useEffect(() => {
     if (task) {
+      // Parse tags if it's a string (from database)
+      let parsedTags: string[] = [];
+      if (task.tags) {
+        if (typeof task.tags === 'string') {
+          try {
+            parsedTags = JSON.parse(task.tags);
+          } catch (e) {
+            console.error('Error parsing tags:', e);
+            parsedTags = [];
+          }
+        } else if (Array.isArray(task.tags)) {
+          parsedTags = task.tags;
+        }
+      }
+
       setFormData({
         projectId: task.projectId,
         title: task.title,
@@ -50,21 +76,50 @@ export const TaskForm: React.FC<TaskFormProps> = ({ task, projectId, onClose }) 
         startDate: task.startDate || '',
         endDate: task.endDate || '',
         parentTaskId: task.parentTaskId || undefined,
-        tags: task.tags || [],
+        milestoneId: task.milestoneId || undefined,
+        tags: parsedTags,
       });
     }
   }, [task]);
+
+  // Fetch current assignments when editing a task
+  useEffect(() => {
+    const loadAssignments = async () => {
+      if (task?.id) {
+        try {
+          const assignments = await window.api.taskAssignments.getAll({ taskId: task.id });
+          setSelectedResourceIds(assignments.map(a => a.resourceId));
+        } catch (error) {
+          console.error('Error fetching task assignments:', error);
+        }
+      }
+    };
+    loadAssignments();
+  }, [task?.id]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
 
     try {
+      let taskId: string;
+
       if (task) {
         await updateTask(task.id, formData);
+        taskId = task.id;
       } else {
-        await createTask(formData);
+        const newTask = await createTask(formData);
+        taskId = newTask.id;
       }
+
+      // Save resource assignments
+      if (selectedResourceIds.length > 0) {
+        await assignResourcesToTask(taskId, selectedResourceIds);
+      } else {
+        // Clear assignments if no resources selected
+        await assignResourcesToTask(taskId, []);
+      }
+
       onClose();
     } catch (error) {
       console.error('Error saving task:', error);
@@ -84,10 +139,11 @@ export const TaskForm: React.FC<TaskFormProps> = ({ task, projectId, onClose }) 
   };
 
   const handleAddTag = () => {
-    if (tagInput.trim() && !formData.tags?.includes(tagInput.trim())) {
+    const currentTags = Array.isArray(formData.tags) ? formData.tags : [];
+    if (tagInput.trim() && !currentTags.includes(tagInput.trim())) {
       setFormData(prev => ({
         ...prev,
-        tags: [...(prev.tags || []), tagInput.trim()],
+        tags: [...currentTags, tagInput.trim()],
       }));
       setTagInput('');
     }
@@ -100,8 +156,20 @@ export const TaskForm: React.FC<TaskFormProps> = ({ task, projectId, onClose }) 
     }));
   };
 
+  const handleToggleResource = (resourceId: string) => {
+    setSelectedResourceIds(prev =>
+      prev.includes(resourceId)
+        ? prev.filter(id => id !== resourceId)
+        : [...prev, resourceId]
+    );
+  };
+
   const availableParentTasks = tasks.filter(
     t => t.projectId === formData.projectId && t.id !== task?.id
+  );
+
+  const availableMilestones = milestones.filter(
+    m => m.projectId === formData.projectId
   );
 
   return (
@@ -217,43 +285,95 @@ export const TaskForm: React.FC<TaskFormProps> = ({ task, projectId, onClose }) 
             </div>
           </div>
 
-          {/* Assignee and Parent Task */}
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label htmlFor="assignee" className="block text-sm font-medium text-gray-700 mb-1">
-                Assigné à
-              </label>
-              <input
-                type="text"
-                id="assignee"
-                name="assignee"
-                value={formData.assignee}
-                onChange={handleChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="Nom de la personne"
-              />
-            </div>
+          {/* Parent Task */}
+          <div>
+            <label htmlFor="parentTaskId" className="block text-sm font-medium text-gray-700 mb-1">
+              Tâche parente
+            </label>
+            <select
+              id="parentTaskId"
+              name="parentTaskId"
+              value={formData.parentTaskId || ''}
+              onChange={handleChange}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              disabled={!formData.projectId}
+            >
+              <option value="">Aucune</option>
+              {availableParentTasks.map(parentTask => (
+                <option key={parentTask.id} value={parentTask.id}>
+                  {parentTask.title}
+                </option>
+              ))}
+            </select>
+          </div>
 
-            <div>
-              <label htmlFor="parentTaskId" className="block text-sm font-medium text-gray-700 mb-1">
-                Tâche parente
-              </label>
-              <select
-                id="parentTaskId"
-                name="parentTaskId"
-                value={formData.parentTaskId || ''}
-                onChange={handleChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                disabled={!formData.projectId}
-              >
-                <option value="">Aucune</option>
-                {availableParentTasks.map(parentTask => (
-                  <option key={parentTask.id} value={parentTask.id}>
-                    {parentTask.title}
-                  </option>
-                ))}
-              </select>
+          {/* Milestone */}
+          <div>
+            <label htmlFor="milestoneId" className="block text-sm font-medium text-gray-700 mb-1">
+              Jalon associé
+            </label>
+            <select
+              id="milestoneId"
+              name="milestoneId"
+              value={formData.milestoneId || ''}
+              onChange={handleChange}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              disabled={!formData.projectId}
+            >
+              <option value="">Aucun</option>
+              {availableMilestones.map(milestone => (
+                <option key={milestone.id} value={milestone.id}>
+                  {milestone.name} ({new Date(milestone.targetDate).toLocaleDateString('fr-FR')})
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {/* Resource Assignments */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              <Users className="w-4 h-4 inline mr-1" />
+              Ressources assignées
+            </label>
+            <div className="border border-gray-300 rounded-lg p-3 max-h-48 overflow-y-auto">
+              {resources.length === 0 ? (
+                <p className="text-sm text-gray-500">Aucune ressource disponible</p>
+              ) : (
+                <div className="space-y-2">
+                  {resources.map(resource => (
+                    <label
+                      key={resource.id}
+                      className="flex items-center gap-3 p-2 hover:bg-gray-50 rounded cursor-pointer"
+                    >
+                      <input
+                        type="checkbox"
+                        checked={selectedResourceIds.includes(resource.id)}
+                        onChange={() => handleToggleResource(resource.id)}
+                        className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-2 focus:ring-blue-500"
+                      />
+                      <div className="flex-1">
+                        <div className="text-sm font-medium text-gray-900">
+                          {resource.name}
+                        </div>
+                        {resource.role && (
+                          <div className="text-xs text-gray-500">
+                            {resource.role}
+                          </div>
+                        )}
+                      </div>
+                      <div className="text-xs text-gray-500">
+                        {resource.availability}% dispo
+                      </div>
+                    </label>
+                  ))}
+                </div>
+              )}
             </div>
+            {selectedResourceIds.length > 0 && (
+              <p className="text-xs text-gray-500 mt-1">
+                {selectedResourceIds.length} ressource(s) sélectionnée(s)
+              </p>
+            )}
           </div>
 
           {/* Hours */}
@@ -347,7 +467,7 @@ export const TaskForm: React.FC<TaskFormProps> = ({ task, projectId, onClose }) 
               </button>
             </div>
             <div className="flex flex-wrap gap-2">
-              {formData.tags?.map(tag => (
+              {Array.isArray(formData.tags) && formData.tags.map(tag => (
                 <span
                   key={tag}
                   className="px-2 py-1 bg-blue-100 text-blue-700 text-sm rounded-lg flex items-center gap-1"

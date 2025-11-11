@@ -1,59 +1,68 @@
-import React, { useEffect, useState, useMemo } from 'react';
-import { Filter, Calendar, ChevronLeft, ChevronRight } from 'lucide-react';
-import { useTasksStore } from '../stores/tasksStore';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { Calendar, FileDown } from 'lucide-react';
 import { useProjectsStore } from '../stores/projectsStore';
-import type { Task } from '../types/task';
+import type { Project } from '../types/project';
+import { exportGanttToPDF } from '../lib/pdfExport';
+
+type GanttViewMode = 'day' | 'week' | 'month';
 
 export const GanttView: React.FC = () => {
-  const { tasks, fetchTasks } = useTasksStore();
   const { projects, fetchProjects } = useProjectsStore();
-  const [selectedProject, setSelectedProject] = useState<string>('all');
-  const [viewStart, setViewStart] = useState(new Date());
+  const [isExporting, setIsExporting] = useState(false);
+  const [viewMode, setViewMode] = useState<GanttViewMode>('month');
+  const ganttRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     fetchProjects();
-    fetchTasks();
-  }, [fetchProjects, fetchTasks]);
+  }, [fetchProjects]);
 
-  // Filter tasks with dates
-  const tasksWithDates = useMemo(() => {
-    const filtered = selectedProject === 'all'
-      ? tasks
-      : tasks.filter(t => t.projectId === selectedProject);
+  // Filter projects with dates
+  const projectsWithDates = useMemo(() => {
+    return projects.filter(p => p.startDate && p.endDate);
+  }, [projects]);
 
-    return filtered.filter(t => t.startDate && t.endDate);
-  }, [tasks, selectedProject]);
-
-  // Calculate timeline range
+  // Calculate timeline range based on view mode
   const { timelineStart, timelineEnd, totalDays } = useMemo(() => {
-    if (tasksWithDates.length === 0) {
-      const start = new Date();
-      start.setDate(1);
-      const end = new Date(start);
-      end.setMonth(end.getMonth() + 3);
-      return {
-        timelineStart: start,
-        timelineEnd: end,
-        totalDays: 90,
-      };
+    let start: Date;
+    let end: Date;
+
+    if (projectsWithDates.length === 0) {
+      start = new Date();
+    } else {
+      const dates = projectsWithDates.flatMap(p => [
+        new Date(p.startDate!),
+        new Date(p.endDate!)
+      ]);
+      start = new Date(Math.min(...dates.map(d => d.getTime())));
     }
 
-    const dates = tasksWithDates.flatMap(t => [
-      new Date(t.startDate!),
-      new Date(t.endDate!)
-    ]);
-
-    let start = new Date(Math.min(...dates.map(d => d.getTime())));
-    let end = new Date(Math.max(...dates.map(d => d.getTime())));
-
-    // Add padding
-    start.setDate(start.getDate() - 7);
-    end.setDate(end.getDate() + 7);
-
-    // Round to month start/end
-    start.setDate(1);
-    end.setMonth(end.getMonth() + 1);
-    end.setDate(0);
+    // Calculate end based on view mode
+    switch (viewMode) {
+      case 'day':
+        // 30 days view
+        start.setHours(0, 0, 0, 0);
+        end = new Date(start);
+        end.setDate(end.getDate() + 30);
+        break;
+      case 'week':
+        // 12 weeks view (84 days)
+        start.setHours(0, 0, 0, 0);
+        // Round to week start (Monday)
+        const day = start.getDay();
+        const diff = day === 0 ? -6 : 1 - day;
+        start.setDate(start.getDate() + diff);
+        end = new Date(start);
+        end.setDate(end.getDate() + (12 * 7));
+        break;
+      case 'month':
+        // 12 months view
+        start.setDate(1);
+        start.setHours(0, 0, 0, 0);
+        end = new Date(start);
+        end.setMonth(end.getMonth() + 12);
+        end.setDate(0);
+        break;
+    }
 
     const days = Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24));
 
@@ -62,30 +71,62 @@ export const GanttView: React.FC = () => {
       timelineEnd: end,
       totalDays: days,
     };
-  }, [tasksWithDates]);
+  }, [projectsWithDates, viewMode]);
 
-  // Generate months for timeline
-  const months = useMemo(() => {
+  // Generate timeline periods based on view mode
+  const timelinePeriods = useMemo(() => {
     const result = [];
     const current = new Date(timelineStart);
 
-    while (current <= timelineEnd) {
-      const daysInMonth = new Date(current.getFullYear(), current.getMonth() + 1, 0).getDate();
-      result.push({
-        date: new Date(current),
-        label: current.toLocaleDateString('fr-FR', { month: 'short', year: 'numeric' }),
-        days: daysInMonth,
-      });
-      current.setMonth(current.getMonth() + 1);
+    switch (viewMode) {
+      case 'day':
+        // Generate days
+        while (current <= timelineEnd) {
+          result.push({
+            date: new Date(current),
+            label: current.toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' }),
+            days: 1,
+          });
+          current.setDate(current.getDate() + 1);
+        }
+        break;
+
+      case 'week':
+        // Generate weeks
+        while (current <= timelineEnd) {
+          const weekEnd = new Date(current);
+          weekEnd.setDate(weekEnd.getDate() + 6);
+          const weekNumber = Math.ceil(((current.getTime() - new Date(current.getFullYear(), 0, 1).getTime()) / 86400000 + 1) / 7);
+          result.push({
+            date: new Date(current),
+            label: `S${weekNumber}`,
+            days: 7,
+          });
+          current.setDate(current.getDate() + 7);
+        }
+        break;
+
+      case 'month':
+        // Generate months
+        while (current <= timelineEnd) {
+          const daysInMonth = new Date(current.getFullYear(), current.getMonth() + 1, 0).getDate();
+          result.push({
+            date: new Date(current),
+            label: current.toLocaleDateString('fr-FR', { month: 'short', year: 'numeric' }),
+            days: daysInMonth,
+          });
+          current.setMonth(current.getMonth() + 1);
+        }
+        break;
     }
 
     return result;
-  }, [timelineStart, timelineEnd]);
+  }, [timelineStart, timelineEnd, viewMode]);
 
-  // Calculate task bar position and width
-  const getTaskBarStyle = (task: Task) => {
-    const start = new Date(task.startDate!);
-    const end = new Date(task.endDate!);
+  // Calculate project bar position and width
+  const getProjectBarStyle = (project: Project) => {
+    const start = new Date(project.startDate!);
+    const end = new Date(project.endDate!);
 
     const daysFromStart = Math.floor((start.getTime() - timelineStart.getTime()) / (1000 * 60 * 60 * 24));
     const duration = Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)) + 1;
@@ -99,115 +140,171 @@ export const GanttView: React.FC = () => {
     };
   };
 
-  const getProjectColor = (projectId: string) => {
-    const project = projects.find(p => p.id === projectId);
-    return project?.color || '#3B82F6';
-  };
-
-  const getProjectName = (projectId: string) => {
-    const project = projects.find(p => p.id === projectId);
-    return project?.name || 'Projet inconnu';
-  };
-
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'done': return 'bg-green-500';
+      case 'completed': return 'bg-green-500';
       case 'in_progress': return 'bg-blue-500';
-      case 'blocked': return 'bg-red-500';
-      case 'review': return 'bg-purple-500';
+      case 'on_hold': return 'bg-yellow-500';
+      case 'not_started': return 'bg-gray-400';
+      case 'archived': return 'bg-gray-300';
       default: return 'bg-gray-400';
     }
   };
 
+  const getStatusLabel = (status: string) => {
+    switch (status) {
+      case 'completed': return 'Terminé';
+      case 'in_progress': return 'En cours';
+      case 'on_hold': return 'En pause';
+      case 'not_started': return 'Non démarré';
+      case 'archived': return 'Archivé';
+      default: return status;
+    }
+  };
+
   const dayWidth = 100 / totalDays;
+
+  const handleExportPDF = async () => {
+    if (!ganttRef.current) return;
+
+    try {
+      setIsExporting(true);
+      await exportGanttToPDF(ganttRef.current);
+    } catch (error) {
+      console.error('Error exporting Gantt to PDF:', error);
+      alert('Erreur lors de l\'export du Gantt en PDF');
+    } finally {
+      setIsExporting(false);
+    }
+  };
 
   return (
     <div className="h-full flex flex-col">
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h2 className="text-2xl font-bold text-gray-900 mb-1">Diagramme de Gantt</h2>
+          <h2 className="text-2xl font-bold text-gray-900 mb-1">Diagramme de Gantt - Vue Projets</h2>
           <p className="text-sm text-gray-600">
-            Visualisation temporelle des tâches ({tasksWithDates.length} tâches)
+            Visualisation temporelle des projets ({projectsWithDates.length} projet(s))
           </p>
         </div>
 
         <div className="flex items-center gap-3">
-          <Filter className="w-5 h-5 text-gray-500" />
-          <select
-            value={selectedProject}
-            onChange={(e) => setSelectedProject(e.target.value)}
-            className="px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+          {/* View mode selector */}
+          <div className="flex items-center gap-1 bg-gray-100 rounded-lg p-1">
+            <button
+              onClick={() => setViewMode('day')}
+              className={`px-3 py-1.5 text-xs font-medium rounded transition-colors ${
+                viewMode === 'day'
+                  ? 'bg-white text-gray-900 shadow-sm'
+                  : 'text-gray-600 hover:text-gray-900'
+              }`}
+            >
+              Jour
+            </button>
+            <button
+              onClick={() => setViewMode('week')}
+              className={`px-3 py-1.5 text-xs font-medium rounded transition-colors ${
+                viewMode === 'week'
+                  ? 'bg-white text-gray-900 shadow-sm'
+                  : 'text-gray-600 hover:text-gray-900'
+              }`}
+            >
+              Semaine
+            </button>
+            <button
+              onClick={() => setViewMode('month')}
+              className={`px-3 py-1.5 text-xs font-medium rounded transition-colors ${
+                viewMode === 'month'
+                  ? 'bg-white text-gray-900 shadow-sm'
+                  : 'text-gray-600 hover:text-gray-900'
+              }`}
+            >
+              Mois
+            </button>
+          </div>
+
+          <button
+            onClick={handleExportPDF}
+            disabled={isExporting || projectsWithDates.length === 0}
+            className="flex items-center gap-2 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            title="Exporter en PDF"
           >
-            <option value="all">Tous les projets</option>
-            {projects.map(project => (
-              <option key={project.id} value={project.id}>
-                {project.name}
-              </option>
-            ))}
-          </select>
+            <FileDown className="w-5 h-5" />
+            {isExporting ? 'Export...' : 'Exporter PDF'}
+          </button>
         </div>
       </div>
 
       {/* Empty State */}
-      {tasksWithDates.length === 0 && (
+      {projectsWithDates.length === 0 && (
         <div className="flex-1 flex flex-col items-center justify-center text-gray-500">
           <Calendar className="w-16 h-16 mb-4 text-gray-300" />
-          <p className="text-lg font-medium mb-2">Aucune tâche avec dates</p>
+          <p className="text-lg font-medium mb-2">Aucun projet avec dates</p>
           <p className="text-sm">
-            Les tâches doivent avoir une date de début et de fin pour apparaître dans le Gantt
+            Les projets doivent avoir une date de début et de fin pour apparaître dans le Gantt
           </p>
         </div>
       )}
 
       {/* Gantt Chart */}
-      {tasksWithDates.length > 0 && (
-        <div className="flex-1 bg-white rounded-lg border border-gray-200 overflow-hidden flex flex-col">
+      {projectsWithDates.length > 0 && (
+        <div ref={ganttRef} className="flex-1 bg-white rounded-lg border border-gray-200 overflow-hidden flex flex-col">
           {/* Timeline Header */}
           <div className="border-b border-gray-200 bg-gray-50">
             <div className="flex">
-              {/* Task names column */}
-              <div className="w-64 flex-shrink-0 px-4 py-3 border-r border-gray-200 font-semibold text-sm text-gray-700">
-                Tâches
+              {/* Project names column */}
+              <div className="w-80 flex-shrink-0 px-4 py-3 border-r border-gray-200 font-semibold text-sm text-gray-700">
+                Projets
               </div>
 
-              {/* Timeline months */}
+              {/* Timeline periods */}
               <div className="flex-1 flex">
-                {months.map((month, idx) => (
+                {timelinePeriods.map((period, idx) => (
                   <div
                     key={idx}
                     className="border-r border-gray-200 last:border-r-0 px-2 py-3 text-center text-sm font-medium text-gray-700"
-                    style={{ width: `${(month.days / totalDays) * 100}%` }}
+                    style={{ width: `${(period.days / totalDays) * 100}%` }}
                   >
-                    {month.label}
+                    {period.label}
                   </div>
                 ))}
               </div>
             </div>
           </div>
 
-          {/* Tasks and Bars */}
+          {/* Projects and Bars */}
           <div className="flex-1 overflow-y-auto">
-            {tasksWithDates.map((task) => (
-              <div key={task.id} className="flex border-b border-gray-100 hover:bg-gray-50 group">
-                {/* Task name */}
-                <div className="w-64 flex-shrink-0 px-4 py-3 border-r border-gray-200">
-                  <div className="text-sm font-medium text-gray-900 line-clamp-1">
-                    {task.title}
-                  </div>
-                  <div className="flex items-center gap-1 mt-1">
+            {projectsWithDates.map((project) => (
+              <div key={project.id} className="flex border-b border-gray-100 hover:bg-gray-50 group">
+                {/* Project name and info */}
+                <div className="w-80 flex-shrink-0 px-4 py-4 border-r border-gray-200">
+                  <div className="flex items-center gap-2 mb-1">
                     <div
-                      className="w-2 h-2 rounded-full"
-                      style={{ backgroundColor: getProjectColor(task.projectId) }}
+                      className="w-3 h-3 rounded-full flex-shrink-0"
+                      style={{ backgroundColor: project.color }}
                     />
-                    <span className="text-xs text-gray-500 truncate">
-                      {getProjectName(task.projectId)}
+                    <div className="text-sm font-semibold text-gray-900 line-clamp-1">
+                      {project.name}
+                    </div>
+                  </div>
+                  {project.description && (
+                    <div className="text-xs text-gray-500 line-clamp-1 mb-2">
+                      {project.description}
+                    </div>
+                  )}
+                  <div className="flex items-center gap-2 text-xs">
+                    <span className={`px-2 py-0.5 rounded-full ${getStatusColor(project.status)} text-white`}>
+                      {getStatusLabel(project.status)}
+                    </span>
+                    <span className="text-gray-600">
+                      {project.progress}%
                     </span>
                   </div>
                 </div>
 
                 {/* Timeline bar */}
-                <div className="flex-1 relative py-3 px-1">
+                <div className="flex-1 relative py-4 px-1">
                   {/* Grid lines (days) */}
                   <div className="absolute inset-0 flex">
                     {Array.from({ length: totalDays }).map((_, i) => (
@@ -219,18 +316,23 @@ export const GanttView: React.FC = () => {
                     ))}
                   </div>
 
-                  {/* Task bar */}
+                  {/* Project bar */}
                   <div
-                    className="absolute top-1/2 -translate-y-1/2 h-6 rounded cursor-pointer transition-all group-hover:h-7"
+                    className="absolute top-1/2 -translate-y-1/2 h-8 rounded-lg cursor-pointer transition-all group-hover:h-9 overflow-hidden shadow-sm"
                     style={{
-                      ...getTaskBarStyle(task),
-                      backgroundColor: getProjectColor(task.projectId),
-                      opacity: 0.8,
+                      ...getProjectBarStyle(project),
+                      backgroundColor: project.color,
                     }}
-                    title={`${task.title}\n${new Date(task.startDate!).toLocaleDateString('fr-FR')} - ${new Date(task.endDate!).toLocaleDateString('fr-FR')}`}
+                    title={`${project.name}\n${new Date(project.startDate!).toLocaleDateString('fr-FR')} - ${new Date(project.endDate!).toLocaleDateString('fr-FR')}\nProgrès: ${project.progress}%`}
                   >
-                    <div className="h-full flex items-center justify-between px-2 text-white text-xs font-medium truncate">
-                      <span className="truncate">{task.title}</span>
+                    {/* Progress bar */}
+                    <div
+                      className="h-full bg-white/30"
+                      style={{ width: `${project.progress}%` }}
+                    />
+                    <div className="absolute inset-0 flex items-center justify-between px-3 text-white text-xs font-medium">
+                      <span className="truncate">{project.name}</span>
+                      <span className="ml-2 flex-shrink-0">{project.progress}%</span>
                     </div>
                   </div>
                 </div>
@@ -239,11 +341,15 @@ export const GanttView: React.FC = () => {
           </div>
 
           {/* Legend */}
-          <div className="border-t border-gray-200 bg-gray-50 px-4 py-2">
+          <div className="border-t border-gray-200 bg-gray-50 px-4 py-3">
             <div className="flex items-center gap-4 text-xs text-gray-600">
-              <span>Période: {timelineStart.toLocaleDateString('fr-FR')} - {timelineEnd.toLocaleDateString('fr-FR')}</span>
+              <span className="font-medium">Vue:</span>
+              <span>{viewMode === 'day' ? '30 jours' : viewMode === 'week' ? '12 semaines' : '12 mois'}</span>
               <span>·</span>
-              <span>{totalDays} jours</span>
+              <span className="font-medium">Période:</span>
+              <span>{timelineStart.toLocaleDateString('fr-FR')} - {timelineEnd.toLocaleDateString('fr-FR')}</span>
+              <span>·</span>
+              <span>{projectsWithDates.length} projet(s)</span>
             </div>
           </div>
         </div>

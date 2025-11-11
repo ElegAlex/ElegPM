@@ -1,8 +1,10 @@
 import React, { useEffect, useState } from 'react';
-import { Plus, Search, Edit2, Trash2, FolderOpen } from 'lucide-react';
+import { Plus, Search, Edit2, Trash2, FolderOpen, Download, Upload } from 'lucide-react';
 import { useProjectsStore } from '../stores/projectsStore';
 import { ProjectForm } from '../components/ProjectForm';
 import type { Project } from '../types/project';
+import { exportProjectsToExcel } from '../lib/excelExport';
+import { importProjectsFromExcel } from '../lib/excelImport';
 
 const statusColors = {
   not_started: 'bg-gray-100 text-gray-700',
@@ -34,11 +36,17 @@ const priorityLabels = {
   urgent: 'Urgente',
 };
 
-export const ProjectsView: React.FC = () => {
-  const { projects, isLoading, error, fetchProjects, deleteProject } = useProjectsStore();
+interface ProjectsViewProps {
+  onProjectClick?: (projectId: string) => void;
+}
+
+export const ProjectsView: React.FC<ProjectsViewProps> = ({ onProjectClick }) => {
+  const { projects, isLoading, error, fetchProjects, deleteProject, createProject } = useProjectsStore();
   const [searchQuery, setSearchQuery] = useState('');
   const [showForm, setShowForm] = useState(false);
   const [editingProject, setEditingProject] = useState<Project | null>(null);
+  const [isExporting, setIsExporting] = useState(false);
+  const [isImporting, setIsImporting] = useState(false);
 
   useEffect(() => {
     fetchProjects();
@@ -69,6 +77,66 @@ export const ProjectsView: React.FC = () => {
     setEditingProject(null);
   };
 
+  const handleExport = async () => {
+    try {
+      setIsExporting(true);
+      await exportProjectsToExcel(projects);
+    } catch (error) {
+      console.error('Error exporting projects:', error);
+      alert('Erreur lors de l\'export des projets');
+    } finally {
+      setIsExporting(false);
+    }
+  };
+
+  const handleImport = async () => {
+    try {
+      setIsImporting(true);
+
+      // Ouvrir le dialogue de sélection de fichier
+      const result = await window.api.files.openExcelDialog();
+
+      if (result.canceled || !result.fileBuffer) {
+        setIsImporting(false);
+        return;
+      }
+
+      // Convertir le buffer en File object
+      const uint8Array = new Uint8Array(result.fileBuffer);
+      const blob = new Blob([uint8Array], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+      const file = new File([blob], result.fileName || 'import.xlsx');
+
+      // Importer les données
+      const importResult = await importProjectsFromExcel(file);
+
+      if (importResult.errors.length > 0) {
+        const errorMessages = importResult.errors.map(e => `Ligne ${e.row}, ${e.field}: ${e.message}`).join('\n');
+        alert(`Import terminé avec des erreurs:\n\n${errorMessages}\n\n${importResult.success.length} projets importés avec succès.`);
+      }
+
+      // Créer les projets importés
+      let successCount = 0;
+      for (const projectInput of importResult.success) {
+        try {
+          await createProject(projectInput);
+          successCount++;
+        } catch (error) {
+          console.error('Error creating project:', error);
+        }
+      }
+
+      if (successCount > 0) {
+        await fetchProjects();
+        alert(`${successCount} projet(s) importé(s) avec succès !`);
+      }
+    } catch (error) {
+      console.error('Error importing projects:', error);
+      alert('Erreur lors de l\'import des projets');
+    } finally {
+      setIsImporting(false);
+    }
+  };
+
   return (
     <div className="h-full flex flex-col">
       {/* Header Actions */}
@@ -85,13 +153,33 @@ export const ProjectsView: React.FC = () => {
             />
           </div>
         </div>
-        <button
-          onClick={() => setShowForm(true)}
-          className="ml-4 flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-        >
-          <Plus className="w-5 h-5" />
-          Nouveau projet
-        </button>
+        <div className="flex items-center gap-2 ml-4">
+          <button
+            onClick={handleImport}
+            disabled={isImporting}
+            className="flex items-center gap-2 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            title="Importer depuis Excel"
+          >
+            <Upload className="w-5 h-5" />
+            {isImporting ? 'Import...' : 'Importer'}
+          </button>
+          <button
+            onClick={handleExport}
+            disabled={isExporting || projects.length === 0}
+            className="flex items-center gap-2 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            title="Exporter vers Excel"
+          >
+            <Download className="w-5 h-5" />
+            {isExporting ? 'Export...' : 'Exporter'}
+          </button>
+          <button
+            onClick={() => setShowForm(true)}
+            className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+          >
+            <Plus className="w-5 h-5" />
+            Nouveau projet
+          </button>
+        </div>
       </div>
 
       {/* Error Message */}
@@ -127,7 +215,8 @@ export const ProjectsView: React.FC = () => {
           {filteredProjects.map(project => (
             <div
               key={project.id}
-              className="bg-white border border-gray-200 rounded-lg p-5 hover:shadow-md transition-shadow"
+              className="bg-white border border-gray-200 rounded-lg p-5 hover:shadow-md transition-shadow cursor-pointer"
+              onClick={() => onProjectClick?.(project.id)}
             >
               {/* Project Header */}
               <div className="flex items-start justify-between mb-3">
@@ -147,7 +236,7 @@ export const ProjectsView: React.FC = () => {
                     </p>
                   )}
                 </div>
-                <div className="flex gap-1 ml-2">
+                <div className="flex gap-1 ml-2" onClick={(e) => e.stopPropagation()}>
                   <button
                     onClick={() => handleEdit(project)}
                     className="p-1.5 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded transition-colors"

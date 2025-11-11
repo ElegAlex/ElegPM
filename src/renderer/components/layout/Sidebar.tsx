@@ -6,6 +6,7 @@ import {
   GanttChart,
   Flag,
   Users,
+  BarChart3,
   FileDown,
 } from 'lucide-react';
 
@@ -22,6 +23,7 @@ const Sidebar: React.FC<SidebarProps> = ({ currentView, onViewChange }) => {
     { id: 'gantt', label: 'Gantt', icon: GanttChart },
     { id: 'milestones', label: 'Jalons', icon: Flag },
     { id: 'resources', label: 'Ressources', icon: Users },
+    { id: 'workload', label: 'Charge de travail', icon: BarChart3 },
     { id: 'exports', label: 'Export', icon: FileDown },
   ];
 

@@ -42,6 +42,7 @@ module.exports = {
               name: 'main_window',
               preload: {
                 js: './src/preload/index.ts',
+                config: './webpack.preload.config.js',
               },
             },
           ],

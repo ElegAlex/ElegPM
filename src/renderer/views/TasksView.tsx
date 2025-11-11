@@ -1,9 +1,11 @@
 import React, { useEffect, useState } from 'react';
-import { Plus, Filter, Clock, User, Edit2, Trash2 } from 'lucide-react';
+import { Plus, Filter, Clock, User, Edit2, Trash2, Download, Upload } from 'lucide-react';
 import { useTasksStore } from '../stores/tasksStore';
 import { useProjectsStore } from '../stores/projectsStore';
 import { TaskForm } from '../components/TaskForm';
 import type { Task, TaskStatus } from '../types/task';
+import { exportTasksToExcel } from '../lib/excelExport';
+import { importTasksFromExcel } from '../lib/excelImport';
 
 const statusConfig = {
   todo: { label: 'À faire', color: 'bg-gray-100 border-gray-300' },
@@ -21,12 +23,14 @@ const priorityColors = {
 };
 
 export const TasksView: React.FC = () => {
-  const { tasks, isLoading, error, fetchTasks, updateTaskStatus, deleteTask } = useTasksStore();
+  const { tasks, isLoading, error, fetchTasks, updateTaskStatus, deleteTask, createTask } = useTasksStore();
   const { projects, fetchProjects } = useProjectsStore();
   const [selectedProject, setSelectedProject] = useState<string>('all');
   const [showForm, setShowForm] = useState(false);
   const [editingTask, setEditingTask] = useState<Task | null>(null);
   const [draggedTask, setDraggedTask] = useState<Task | null>(null);
+  const [isExporting, setIsExporting] = useState(false);
+  const [isImporting, setIsImporting] = useState(false);
 
   useEffect(() => {
     fetchProjects();
@@ -91,6 +95,69 @@ export const TasksView: React.FC = () => {
     setEditingTask(null);
   };
 
+  const handleExport = async () => {
+    try {
+      setIsExporting(true);
+      await exportTasksToExcel(filteredTasks, projects);
+    } catch (error) {
+      console.error('Error exporting tasks:', error);
+      alert('Erreur lors de l\'export des tâches');
+    } finally {
+      setIsExporting(false);
+    }
+  };
+
+  const handleImport = async () => {
+    try {
+      setIsImporting(true);
+
+      // Ouvrir le dialogue de sélection de fichier
+      const result = await window.api.files.openExcelDialog();
+
+      if (result.canceled || !result.fileBuffer) {
+        setIsImporting(false);
+        return;
+      }
+
+      // Convertir le buffer en File object
+      const uint8Array = new Uint8Array(result.fileBuffer);
+      const blob = new Blob([uint8Array], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+      const file = new File([blob], result.fileName || 'import.xlsx');
+
+      // Créer une map nom projet -> ID projet
+      const projectIdMap = new Map(projects.map(p => [p.name, p.id]));
+
+      // Importer les données
+      const importResult = await importTasksFromExcel(file, projectIdMap);
+
+      if (importResult.errors.length > 0) {
+        const errorMessages = importResult.errors.map(e => `Ligne ${e.row}, ${e.field}: ${e.message}`).join('\n');
+        alert(`Import terminé avec des erreurs:\n\n${errorMessages}\n\n${importResult.success.length} tâches importées avec succès.`);
+      }
+
+      // Créer les tâches importées
+      let successCount = 0;
+      for (const taskInput of importResult.success) {
+        try {
+          await createTask(taskInput);
+          successCount++;
+        } catch (error) {
+          console.error('Error creating task:', error);
+        }
+      }
+
+      if (successCount > 0) {
+        await fetchTasks();
+        alert(`${successCount} tâche(s) importée(s) avec succès !`);
+      }
+    } catch (error) {
+      console.error('Error importing tasks:', error);
+      alert('Erreur lors de l\'import des tâches');
+    } finally {
+      setIsImporting(false);
+    }
+  };
+
   return (
     <div className="h-full flex flex-col">
       {/* Header Actions */}
@@ -110,13 +177,33 @@ export const TasksView: React.FC = () => {
             ))}
           </select>
         </div>
-        <button
-          onClick={() => setShowForm(true)}
-          className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-        >
-          <Plus className="w-5 h-5" />
-          Nouvelle tâche
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={handleImport}
+            disabled={isImporting || projects.length === 0}
+            className="flex items-center gap-2 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            title="Importer depuis Excel"
+          >
+            <Upload className="w-5 h-5" />
+            {isImporting ? 'Import...' : 'Importer'}
+          </button>
+          <button
+            onClick={handleExport}
+            disabled={isExporting || filteredTasks.length === 0}
+            className="flex items-center gap-2 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            title="Exporter vers Excel"
+          >
+            <Download className="w-5 h-5" />
+            {isExporting ? 'Export...' : 'Exporter'}
+          </button>
+          <button
+            onClick={() => setShowForm(true)}
+            className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+          >
+            <Plus className="w-5 h-5" />
+            Nouvelle tâche
+          </button>
+        </div>
       </div>
 
       {/* Error Message */}
@@ -241,9 +328,12 @@ export const TasksView: React.FC = () => {
                       )}
 
                       {/* Tags */}
-                      {task.tags && task.tags.length > 0 && (
+                      {task.tags && (
                         <div className="flex flex-wrap gap-1 mt-2">
-                          {task.tags.map((tag, idx) => (
+                          {(typeof task.tags === 'string'
+                            ? JSON.parse(task.tags || '[]')
+                            : Array.isArray(task.tags) ? task.tags : []
+                          ).map((tag, idx) => (
                             <span
                               key={idx}
                               className="px-1.5 py-0.5 bg-gray-100 text-gray-600 text-xs rounded"

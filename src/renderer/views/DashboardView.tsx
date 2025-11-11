@@ -1,15 +1,18 @@
-import React, { useEffect } from 'react';
-import { FolderOpen, CheckSquare, Flag, Users, TrendingUp, AlertCircle, Calendar } from 'lucide-react';
+import React, { useEffect, useRef, useState } from 'react';
+import { FolderOpen, CheckSquare, Flag, Users, TrendingUp, AlertCircle, Calendar, FileDown } from 'lucide-react';
 import { useProjectsStore } from '../stores/projectsStore';
 import { useTasksStore } from '../stores/tasksStore';
 import { useMilestonesStore } from '../stores/milestonesStore';
 import { useResourcesStore } from '../stores/resourcesStore';
+import { exportDashboardToPDF } from '../lib/pdfExport';
 
 export const DashboardView: React.FC = () => {
   const { projects, fetchProjects } = useProjectsStore();
   const { tasks, fetchTasks } = useTasksStore();
   const { milestones, fetchMilestones } = useMilestonesStore();
   const { resources, fetchResources } = useResourcesStore();
+  const dashboardRef = useRef<HTMLDivElement>(null);
+  const [isExporting, setIsExporting] = useState(false);
 
   useEffect(() => {
     fetchProjects();
@@ -54,14 +57,50 @@ export const DashboardView: React.FC = () => {
     ? Math.round(projects.reduce((acc, p) => acc + p.progress, 0) / projects.length)
     : 0;
 
+  // Get active projects with dates for display
+  const activeProjectsList = projects
+    .filter(p => p.status === 'in_progress' || p.status === 'not_started')
+    .sort((a, b) => {
+      // Sort by start date if available
+      if (a.startDate && b.startDate) {
+        return new Date(a.startDate).getTime() - new Date(b.startDate).getTime();
+      }
+      return 0;
+    });
+
+  const handleExportPDF = async () => {
+    if (!dashboardRef.current) return;
+
+    try {
+      setIsExporting(true);
+      await exportDashboardToPDF(dashboardRef.current);
+    } catch (error) {
+      console.error('Error exporting dashboard to PDF:', error);
+      alert('Erreur lors de l\'export du dashboard en PDF');
+    } finally {
+      setIsExporting(false);
+    }
+  };
+
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" ref={dashboardRef}>
       {/* Welcome Header */}
-      <div>
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">Tableau de bord</h1>
-        <p className="text-gray-600">
-          Vue d'ensemble de vos projets et activités
-        </p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">Tableau de bord</h1>
+          <p className="text-gray-600">
+            Vue d'ensemble de vos projets et activités
+          </p>
+        </div>
+        <button
+          onClick={handleExportPDF}
+          disabled={isExporting}
+          className="flex items-center gap-2 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          title="Exporter en PDF"
+        >
+          <FileDown className="w-5 h-5" />
+          {isExporting ? 'Export...' : 'Exporter PDF'}
+        </button>
       </div>
 
       {/* Main Stats Cards */}
@@ -267,6 +306,75 @@ export const DashboardView: React.FC = () => {
           </div>
         </div>
       </div>
+
+      {/* Active Projects List */}
+      {activeProjectsList.length > 0 && (
+        <div className="bg-white rounded-lg border border-gray-200 p-6">
+          <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+            <FolderOpen className="w-5 h-5" />
+            Projets actifs
+          </h3>
+          <div className="space-y-4">
+            {activeProjectsList.slice(0, 5).map(project => (
+              <div
+                key={project.id}
+                className="py-3 border-b border-gray-100 last:border-0"
+              >
+                <div className="flex items-start justify-between mb-2">
+                  <div className="flex items-center gap-3 flex-1">
+                    <div
+                      className="w-3 h-3 rounded-full flex-shrink-0 mt-1"
+                      style={{ backgroundColor: project.color }}
+                    />
+                    <div className="flex-1 min-w-0">
+                      <div className="font-medium text-gray-900">{project.name}</div>
+                      {(project.startDate || project.endDate) && (
+                        <div className="flex items-center gap-2 text-sm text-gray-500 mt-1">
+                          <Calendar className="w-3.5 h-3.5" />
+                          {project.startDate && (
+                            <span>
+                              {new Date(project.startDate).toLocaleDateString('fr-FR', {
+                                day: 'numeric',
+                                month: 'short',
+                                year: 'numeric'
+                              })}
+                            </span>
+                          )}
+                          {project.startDate && project.endDate && <span>→</span>}
+                          {project.endDate && (
+                            <span>
+                              {new Date(project.endDate).toLocaleDateString('fr-FR', {
+                                day: 'numeric',
+                                month: 'short',
+                                year: 'numeric'
+                              })}
+                            </span>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-3 ml-4">
+                    <span className="text-sm font-semibold text-blue-600 whitespace-nowrap">
+                      {project.progress}%
+                    </span>
+                  </div>
+                </div>
+                {/* Progress bar */}
+                <div className="w-full bg-gray-200 rounded-full h-2 mt-2">
+                  <div
+                    className="h-2 rounded-full transition-all"
+                    style={{
+                      width: `${project.progress}%`,
+                      backgroundColor: project.color
+                    }}
+                  />
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Upcoming Milestones List */}
       {upcomingMilestones.length > 0 && (

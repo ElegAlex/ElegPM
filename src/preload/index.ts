@@ -5,6 +5,8 @@ import type { Milestone, MilestoneInput } from '../renderer/types/milestone';
 import type { Resource, ResourceInput } from '../renderer/types/resource';
 import type { Comment, CommentInput } from '../renderer/types/comment';
 import type { Attachment, AttachmentInput } from '../renderer/types/attachment';
+import type { TaskAssignment, TaskAssignmentInput } from '../renderer/types/taskAssignment';
+import type { ActivityLog, ActivityLogInput } from '../renderer/types/activityLog';
 
 // Define the API that will be exposed to the renderer process
 export interface ElectronAPI {
@@ -51,6 +53,17 @@ export interface ElectronAPI {
     delete: (id: string) => Promise<void>;
   };
 
+  // Task Assignments API
+  taskAssignments: {
+    getAll: (options?: { taskId?: string; resourceId?: string }) => Promise<TaskAssignment[]>;
+    getById: (id: string) => Promise<TaskAssignment | null>;
+    create: (data: TaskAssignmentInput) => Promise<TaskAssignment>;
+    update: (id: string, data: Partial<TaskAssignmentInput>) => Promise<TaskAssignment>;
+    delete: (id: string) => Promise<void>;
+    assignResources: (taskId: string, resourceIds: string[], allocationPercentage?: number) => Promise<TaskAssignment[]>;
+    getResourceWorkload: (resourceId: string) => Promise<TaskAssignment[]>;
+  };
+
   // Comments API
   comments: {
     getAll: (options?: { taskId?: string; projectId?: string }) => Promise<Comment[]>;
@@ -66,6 +79,41 @@ export interface ElectronAPI {
     getById: (id: string) => Promise<Attachment | null>;
     create: (data: AttachmentInput) => Promise<Attachment>;
     delete: (id: string) => Promise<void>;
+  };
+
+  // Files API
+  files: {
+    openExcelDialog: () => Promise<{ canceled: boolean; filePath?: string; fileName?: string; fileBuffer?: number[] }>;
+    saveExcelDialog: (defaultName?: string) => Promise<{ canceled: boolean; filePath?: string }>;
+    savePDFDialog: (defaultName?: string) => Promise<{ canceled: boolean; filePath?: string }>;
+    saveBuffer: (filePath: string, buffer: number[]) => Promise<{ success: boolean }>;
+    readFile: (filePath: string) => Promise<{ success: boolean; fileBuffer?: number[]; fileName?: string }>;
+  };
+
+  // PDF API
+  pdf: {
+    generateFromImage: (data: {
+      type: 'dashboard' | 'gantt' | 'project-report';
+      filename: string;
+      title?: string;
+      orientation?: 'portrait' | 'landscape';
+      imageData: string;
+    }) => Promise<{ success: boolean; path?: string; error?: string; canceled?: boolean }>;
+
+    generateProjectReport: (data: {
+      project: any;
+      tasks: any[];
+      milestones: any[];
+      resources: any[];
+    }) => Promise<{ success: boolean; path?: string; error?: string; canceled?: boolean }>;
+  };
+
+  // Activity Log API
+  activityLog: {
+    getAll: (options?: { entityType?: string; entityId?: string; limit?: number }) => Promise<ActivityLog[]>;
+    getByProject: (projectId: string, limit?: number) => Promise<ActivityLog[]>;
+    create: (data: ActivityLogInput) => Promise<ActivityLog>;
+    getRecent: (limit?: number) => Promise<ActivityLog[]>;
   };
 }
 
@@ -109,6 +157,17 @@ const api: ElectronAPI = {
     delete: (id) => ipcRenderer.invoke('resources:delete', id),
   },
 
+  taskAssignments: {
+    getAll: (options) => ipcRenderer.invoke('taskAssignments:getAll', options),
+    getById: (id) => ipcRenderer.invoke('taskAssignments:getById', id),
+    create: (data) => ipcRenderer.invoke('taskAssignments:create', data),
+    update: (id, data) => ipcRenderer.invoke('taskAssignments:update', id, data),
+    delete: (id) => ipcRenderer.invoke('taskAssignments:delete', id),
+    assignResources: (taskId, resourceIds, allocationPercentage) =>
+      ipcRenderer.invoke('taskAssignments:assignResources', taskId, resourceIds, allocationPercentage),
+    getResourceWorkload: (resourceId) => ipcRenderer.invoke('taskAssignments:getResourceWorkload', resourceId),
+  },
+
   comments: {
     getAll: (options) => ipcRenderer.invoke('comments:getAll', options),
     getById: (id) => ipcRenderer.invoke('comments:getById', id),
@@ -122,6 +181,26 @@ const api: ElectronAPI = {
     getById: (id) => ipcRenderer.invoke('attachments:getById', id),
     create: (data) => ipcRenderer.invoke('attachments:create', data),
     delete: (id) => ipcRenderer.invoke('attachments:delete', id),
+  },
+
+  files: {
+    openExcelDialog: () => ipcRenderer.invoke('files:openExcelDialog'),
+    saveExcelDialog: (defaultName) => ipcRenderer.invoke('files:saveExcelDialog', defaultName),
+    savePDFDialog: (defaultName) => ipcRenderer.invoke('files:savePDFDialog', defaultName),
+    saveBuffer: (filePath, buffer) => ipcRenderer.invoke('files:saveBuffer', filePath, buffer),
+    readFile: (filePath) => ipcRenderer.invoke('files:readFile', filePath),
+  },
+
+  pdf: {
+    generateFromImage: (data) => ipcRenderer.invoke('generate-pdf-from-image', data),
+    generateProjectReport: (data) => ipcRenderer.invoke('generate-project-report-pdf', data),
+  },
+
+  activityLog: {
+    getAll: (options) => ipcRenderer.invoke('activityLog:getAll', options),
+    getByProject: (projectId, limit) => ipcRenderer.invoke('activityLog:getByProject', projectId, limit),
+    create: (data) => ipcRenderer.invoke('activityLog:create', data),
+    getRecent: (limit) => ipcRenderer.invoke('activityLog:getRecent', limit),
   },
 };
 

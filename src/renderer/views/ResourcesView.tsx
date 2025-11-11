@@ -1,14 +1,18 @@
 import React, { useEffect, useState } from 'react';
-import { Plus, Search, Edit2, Trash2, Users, Mail, Building } from 'lucide-react';
+import { Plus, Search, Edit2, Trash2, Users, Mail, Building, Download, Upload } from 'lucide-react';
 import { useResourcesStore } from '../stores/resourcesStore';
 import { ResourceForm } from '../components/ResourceForm';
 import type { Resource } from '../types/resource';
+import { exportResourcesToExcel } from '../lib/excelExport';
+import { importResourcesFromExcel } from '../lib/excelImport';
 
 export const ResourcesView: React.FC = () => {
-  const { resources, isLoading, error, fetchResources, deleteResource } = useResourcesStore();
+  const { resources, isLoading, error, fetchResources, deleteResource, createResource } = useResourcesStore();
   const [searchQuery, setSearchQuery] = useState('');
   const [showForm, setShowForm] = useState(false);
   const [editingResource, setEditingResource] = useState<Resource | null>(null);
+  const [isExporting, setIsExporting] = useState(false);
+  const [isImporting, setIsImporting] = useState(false);
 
   useEffect(() => {
     fetchResources();
@@ -47,6 +51,66 @@ export const ResourcesView: React.FC = () => {
     return 'text-red-600 bg-red-50';
   };
 
+  const handleExport = async () => {
+    try {
+      setIsExporting(true);
+      await exportResourcesToExcel(filteredResources);
+    } catch (error) {
+      console.error('Error exporting resources:', error);
+      alert('Erreur lors de l\'export des ressources');
+    } finally {
+      setIsExporting(false);
+    }
+  };
+
+  const handleImport = async () => {
+    try {
+      setIsImporting(true);
+
+      // Ouvrir le dialogue de sélection de fichier
+      const result = await window.api.files.openExcelDialog();
+
+      if (result.canceled || !result.fileBuffer) {
+        setIsImporting(false);
+        return;
+      }
+
+      // Convertir le buffer en File object
+      const uint8Array = new Uint8Array(result.fileBuffer);
+      const blob = new Blob([uint8Array], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+      const file = new File([blob], result.fileName || 'import.xlsx');
+
+      // Importer les données
+      const importResult = await importResourcesFromExcel(file);
+
+      if (importResult.errors.length > 0) {
+        const errorMessages = importResult.errors.map(e => `Ligne ${e.row}, ${e.field}: ${e.message}`).join('\n');
+        alert(`Import terminé avec des erreurs:\n\n${errorMessages}\n\n${importResult.success.length} ressources importées avec succès.`);
+      }
+
+      // Créer les ressources importées
+      let successCount = 0;
+      for (const resourceInput of importResult.success) {
+        try {
+          await createResource(resourceInput);
+          successCount++;
+        } catch (error) {
+          console.error('Error creating resource:', error);
+        }
+      }
+
+      if (successCount > 0) {
+        await fetchResources();
+        alert(`${successCount} ressource(s) importée(s) avec succès !`);
+      }
+    } catch (error) {
+      console.error('Error importing resources:', error);
+      alert('Erreur lors de l\'import des ressources');
+    } finally {
+      setIsImporting(false);
+    }
+  };
+
   return (
     <div className="h-full flex flex-col">
       {/* Header Actions */}
@@ -63,13 +127,33 @@ export const ResourcesView: React.FC = () => {
             />
           </div>
         </div>
-        <button
-          onClick={() => setShowForm(true)}
-          className="ml-4 flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-        >
-          <Plus className="w-5 h-5" />
-          Nouvelle ressource
-        </button>
+        <div className="flex items-center gap-2 ml-4">
+          <button
+            onClick={handleImport}
+            disabled={isImporting}
+            className="flex items-center gap-2 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            title="Importer depuis Excel"
+          >
+            <Upload className="w-5 h-5" />
+            {isImporting ? 'Import...' : 'Importer'}
+          </button>
+          <button
+            onClick={handleExport}
+            disabled={isExporting || filteredResources.length === 0}
+            className="flex items-center gap-2 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            title="Exporter vers Excel"
+          >
+            <Download className="w-5 h-5" />
+            {isExporting ? 'Export...' : 'Exporter'}
+          </button>
+          <button
+            onClick={() => setShowForm(true)}
+            className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+          >
+            <Plus className="w-5 h-5" />
+            Nouvelle ressource
+          </button>
+        </div>
       </div>
 
       {/* Error Message */}

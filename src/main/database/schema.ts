@@ -38,6 +38,7 @@ export const tasks = sqliteTable('tasks', {
   startDate: text('start_date'),
   endDate: text('end_date'),
   parentTaskId: text('parent_task_id').references((): any => tasks.id, { onDelete: 'set null' }),
+  milestoneId: text('milestone_id').references(() => milestones.id, { onDelete: 'set null' }),
   orderIndex: integer('order_index'),
   tags: text('tags'), // JSON array
   createdAt: text('created_at').notNull().default(sql`(datetime('now'))`),

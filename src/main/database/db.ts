@@ -63,12 +63,14 @@ export function initializeDatabase() {
       start_date TEXT,
       end_date TEXT,
       parent_task_id TEXT,
+      milestone_id TEXT,
       order_index INTEGER,
       tags TEXT,
       created_at TEXT DEFAULT (datetime('now')),
       updated_at TEXT DEFAULT (datetime('now')),
       FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE,
       FOREIGN KEY (parent_task_id) REFERENCES tasks(id) ON DELETE SET NULL,
+      FOREIGN KEY (milestone_id) REFERENCES milestones(id) ON DELETE SET NULL,
       CHECK (end_date IS NULL OR start_date IS NULL OR end_date >= start_date)
     );
 
@@ -143,12 +145,28 @@ export function initializeDatabase() {
     );
   `);
 
+  // Run migrations for existing databases
+  try {
+    // Check if milestone_id column exists
+    const columns = sqlite.prepare("PRAGMA table_info(tasks)").all() as any[];
+    const hasMilestoneId = columns.some((col: any) => col.name === 'milestone_id');
+
+    if (!hasMilestoneId) {
+      console.log('Running migration: Adding milestone_id column to tasks table');
+      sqlite.exec('ALTER TABLE tasks ADD COLUMN milestone_id TEXT REFERENCES milestones(id) ON DELETE SET NULL');
+      console.log('Migration completed: milestone_id column added');
+    }
+  } catch (error) {
+    console.error('Migration error:', error);
+  }
+
   // Create indexes for better performance
   sqlite.exec(`
     CREATE INDEX IF NOT EXISTS idx_tasks_project ON tasks(project_id);
     CREATE INDEX IF NOT EXISTS idx_tasks_status ON tasks(status);
     CREATE INDEX IF NOT EXISTS idx_tasks_assignee ON tasks(assignee);
     CREATE INDEX IF NOT EXISTS idx_tasks_parent ON tasks(parent_task_id);
+    CREATE INDEX IF NOT EXISTS idx_tasks_milestone ON tasks(milestone_id);
     CREATE INDEX IF NOT EXISTS idx_tasks_dates ON tasks(start_date, end_date);
     CREATE INDEX IF NOT EXISTS idx_milestones_project ON milestones(project_id);
     CREATE INDEX IF NOT EXISTS idx_task_assignments_task ON task_assignments(task_id);

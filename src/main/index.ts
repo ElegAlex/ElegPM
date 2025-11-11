@@ -1,11 +1,15 @@
 import { app, BrowserWindow, ipcMain } from 'electron';
 import path from 'path';
 import { initializeDatabase } from './database/db';
+import { setupPdfHandler } from './pdfHandler';
 
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
 if (require('electron-squirrel-startup')) {
   app.quit();
 }
+
+// Disable hardware acceleration to avoid GPU crashes on some systems
+app.disableHardwareAcceleration();
 
 let mainWindow: BrowserWindow | null = null;
 
@@ -80,8 +84,14 @@ function registerIPCHandlers() {
   require('./ipc/tasks');
   require('./ipc/milestones');
   require('./ipc/resources');
+  require('./ipc/taskAssignments');
   require('./ipc/comments');
   require('./ipc/attachments');
+  require('./ipc/files');
+  require('./ipc/activityLog');
+
+  // Setup PDF handler
+  setupPdfHandler();
 
   // Test handler
   ipcMain.handle('ping', async () => {
