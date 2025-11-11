@@ -1,24 +1,25 @@
 module.exports = {
   packagerConfig: {
-    name: 'GestionProjet',
-    executableName: 'gestion-projet',
+    name: 'Gestion de Projet',
+    executableName: 'GestionProjet',
     asar: true,
-    icon: './assets/icon', // Will look for icon.ico on Windows, icon.icns on macOS, icon.png on Linux
+    // Icon will be added later if available
   },
   rebuildConfig: {},
   makers: [
     {
-      name: '@electron-forge/maker-squirrel',
-      config: {
-        name: 'GestionProjet',
-        setupIcon: './assets/icon.ico',
-        loadingGif: './assets/loading.gif',
-      },
-    },
-    {
       name: '@electron-forge/maker-zip',
-      platforms: ['darwin'],
+      platforms: ['win32', 'linux', 'darwin'],
     },
+    // Squirrel maker disabled on Linux (requires Wine/Mono)
+    // {
+    //   name: '@electron-forge/maker-squirrel',
+    //   config: {
+    //     name: 'GestionProjet',
+    //     authors: 'Alexandre Légaré',
+    //     description: 'Application de gestion de projet professionnelle',
+    //   },
+    // },
     {
       name: '@electron-forge/maker-deb',
       config: {},

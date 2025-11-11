@@ -38,18 +38,8 @@
       },
       "makers": [
         {
-          "name": "@electron-forge/maker-squirrel",
-          "config": {
-            "name": "GestionProjet",
-            "setupIcon": "./assets/icon.ico",
-            "loadingGif": "./assets/loading.gif"
-          }
-        },
-        {
           "name": "@electron-forge/maker-zip",
-          "platforms": [
-            "darwin"
-          ]
+          "platforms": ["win32", "linux", "darwin"]
         },
         {
           "name": "@electron-forge/maker-deb",

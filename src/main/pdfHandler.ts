@@ -125,7 +125,7 @@ export function setupPdfHandler() {
    */
   ipcMain.handle('generate-project-report-pdf', async (_event, reportData: any): Promise<PDFResult> => {
     try {
-      const { project, tasks, milestones, resources } = reportData;
+      const { project, tasks, milestones } = reportData;
 
       // Ouvrir le dialogue de sauvegarde
       const sanitizedName = project.name.replace(/[^a-z0-9]/gi, '_');

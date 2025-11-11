@@ -1,5 +1,5 @@
 import { ipcMain } from 'electron';
-import { eq, and } from 'drizzle-orm';
+import { eq } from 'drizzle-orm';
 import { nanoid } from 'nanoid';
 import db from '../database/db';
 import { tasks } from '../database/schema';
@@ -52,6 +52,7 @@ ipcMain.handle('tasks:create', async (_event, data: TaskInput) => {
       startDate: data.startDate || null,
       endDate: data.endDate || null,
       parentTaskId: data.parentTaskId || null,
+      milestoneId: data.milestoneId || null,
       orderIndex: data.orderIndex || null,
       tags: data.tags ? JSON.stringify(data.tags) : null,
       createdAt: new Date().toISOString(),
@@ -96,9 +97,9 @@ ipcMain.handle('tasks:updateStatus', async (_event, id: string, status: string) 
     await db
       .update(tasks)
       .set({
-        status,
+        status: status as any,
         updatedAt: new Date().toISOString(),
-      })
+      } as any)
       .where(eq(tasks.id, id))
       .run();
 
@@ -129,7 +130,7 @@ ipcMain.handle('tasks:reorder', async (_event, taskId: string, newIndex: number)
       .set({
         orderIndex: newIndex,
         updatedAt: new Date().toISOString(),
-      })
+      } as any)
       .where(eq(tasks.id, taskId))
       .run();
   } catch (error) {
@@ -146,7 +147,7 @@ ipcMain.handle('tasks:move', async (_event, taskId: string, newParentId: string 
       .set({
         parentTaskId: newParentId,
         updatedAt: new Date().toISOString(),
-      })
+      } as any)
       .where(eq(tasks.id, taskId))
       .run();
   } catch (error) {

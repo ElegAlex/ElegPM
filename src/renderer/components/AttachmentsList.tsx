@@ -40,15 +40,9 @@ export const AttachmentsList: React.FC<AttachmentsListProps> = ({ taskId, onAddA
 
   const handleDownload = async (attachment: Attachment) => {
     try {
-      const result = await window.api.files.saveFileDialog({
-        defaultPath: attachment.filename,
-      });
-
-      if (!result.canceled && result.filePath) {
-        // Copier le fichier depuis le chemin de stockage vers le chemin choisi
-        await window.api.files.copyFile(attachment.filePath, result.filePath);
-        alert('Fichier téléchargé avec succès !');
-      }
+      // TODO: Implement file download functionality
+      alert(`Téléchargement de ${attachment.filename} - Fonctionnalité à venir`);
+      console.log('Download attachment:', attachment);
     } catch (error) {
       console.error('Error downloading attachment:', error);
       alert('Erreur lors du téléchargement du fichier');
@@ -164,7 +158,7 @@ export const AttachmentsList: React.FC<AttachmentsListProps> = ({ taskId, onAddA
                   <div className="flex items-center gap-2 text-xs text-gray-500">
                     <span>{formatFileSize(attachment.fileSize)}</span>
                     <span>•</span>
-                    <span>{formatDate(attachment.uploadedAt)}</span>
+                    <span>{formatDate(attachment.createdAt)}</span>
                   </div>
                 </div>
 

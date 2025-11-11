@@ -17,15 +17,8 @@ export const AttachmentUploadForm: React.FC<AttachmentUploadFormProps> = ({
 
   const handleSelectFile = async () => {
     try {
-      const result = await window.api.files.openFileDialog();
-
-      if (!result.canceled && result.filePath) {
-        setSelectedFile({
-          name: result.fileName || 'Fichier sélectionné',
-          path: result.filePath,
-          size: result.fileSize || 0
-        });
-      }
+      // TODO: Implement file dialog
+      alert('Sélection de fichier - Fonctionnalité à venir');
     } catch (error) {
       console.error('Error selecting file:', error);
       alert('Erreur lors de la sélection du fichier');
@@ -54,7 +47,7 @@ export const AttachmentUploadForm: React.FC<AttachmentUploadFormProps> = ({
       await window.api.attachments.create({
         taskId,
         filename: selectedFile.name,
-        filePath: selectedFile.path,
+        filepath: selectedFile.path,
         fileSize: selectedFile.size
       });
 

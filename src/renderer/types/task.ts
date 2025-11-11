@@ -35,5 +35,6 @@ export interface TaskInput {
   endDate?: string;
   parentTaskId?: string;
   milestoneId?: string;
+  orderIndex?: number;
   tags?: string[];
 }
