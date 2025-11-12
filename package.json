@@ -1,21 +1,17 @@
 {
-  "name": "gestion-projet",
-  "productName": "Gestion de Projet",
+  "name": "elegpm",
+  "productName": "ElegPM",
   "version": "1.0.0",
   "description": "Application desktop de gestion de projet inspirée de Linear",
   "main": ".webpack/main",
   "scripts": {
     "start": "electron-forge start",
     "package": "electron-forge package",
-    "make": "npm run rebuild && electron-forge make",
+    "make": "electron-forge make",
     "publish": "electron-forge publish",
-    "rebuild": "electron-rebuild -f -w better-sqlite3",
     "lint": "eslint --ext .ts,.tsx .",
     "lint:fix": "eslint --ext .ts,.tsx . --fix",
-    "typecheck": "tsc --noEmit",
-    "db:generate": "drizzle-kit generate:sqlite",
-    "db:push": "drizzle-kit push:sqlite",
-    "db:studio": "drizzle-kit studio"
+    "typecheck": "tsc --noEmit"
   },
   "keywords": [
     "electron",
@@ -32,8 +28,8 @@
   "config": {
     "forge": {
       "packagerConfig": {
-        "name": "GestionProjet",
-        "executableName": "gestion-projet",
+        "name": "ElegPM",
+        "executableName": "elegpm",
         "asar": true,
         "icon": "./assets/icon"
       },
@@ -45,14 +41,6 @@
             "linux",
             "darwin"
           ]
-        },
-        {
-          "name": "@electron-forge/maker-deb",
-          "config": {}
-        },
-        {
-          "name": "@electron-forge/maker-rpm",
-          "config": {}
         }
       ],
       "plugins": [
@@ -79,10 +67,8 @@
     }
   },
   "dependencies": {
-    "better-sqlite3": "^11.0.0",
     "clsx": "^2.1.0",
     "date-fns": "^3.0.6",
-    "drizzle-orm": "^0.33.0",
     "electron-squirrel-startup": "^1.0.0",
     "html2canvas": "^1.4.1",
     "jspdf": "^2.5.1",
@@ -106,7 +92,6 @@
     "@electron-forge/plugin-webpack": "^7.4.0",
     "@electron/fuses": "^1.8.0",
     "@electron/rebuild": "^4.0.1",
-    "@types/better-sqlite3": "^7.6.9",
     "@types/react": "^18.3.0",
     "@types/react-dom": "^18.3.0",
     "@typescript-eslint/eslint-plugin": "^7.0.0",
@@ -114,9 +99,9 @@
     "@vercel/webpack-asset-relocator-loader": "^1.7.3",
     "autoprefixer": "^10.4.18",
     "buffer": "^6.0.3",
+    "copy-webpack-plugin": "^13.0.1",
     "crypto-browserify": "^3.12.1",
     "css-loader": "^6.10.0",
-    "drizzle-kit": "^0.24.0",
     "electron": "^30.0.1",
     "eslint": "^8.57.0",
     "eslint-plugin-import": "^2.29.1",

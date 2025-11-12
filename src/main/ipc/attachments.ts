@@ -1,79 +1,47 @@
 import { ipcMain } from 'electron';
-import { eq, or } from 'drizzle-orm';
+import { loadData, saveData } from '../database/storage';
 import { nanoid } from 'nanoid';
-import db from '../database/db';
-import { attachments } from '../database/schema';
-import type { AttachmentInput } from '../../renderer/types/attachment';
 
-// Get attachments by task or project
-ipcMain.handle('attachments:getAll', async (_event, options?: { taskId?: string; projectId?: string }) => {
-  try {
-    if (!options || (!options.taskId && !options.projectId)) {
-      const allAttachments = await db.select().from(attachments).all();
-      return allAttachments;
+ipcMain.handle('attachments:getAll', async (_, options?: { taskId?: string; projectId?: string }) => {
+  const data = loadData();
+
+  if (!options || (!options.taskId && !options.projectId)) {
+    return data.attachments;
+  }
+
+  return data.attachments.filter(a => {
+    if (options.taskId && options.projectId) {
+      return a.taskId === options.taskId || a.projectId === options.projectId;
     }
-
-    const conditions = [];
     if (options.taskId) {
-      conditions.push(eq(attachments.taskId, options.taskId));
+      return a.taskId === options.taskId;
     }
     if (options.projectId) {
-      conditions.push(eq(attachments.projectId, options.projectId));
+      return a.projectId === options.projectId;
     }
-
-    const filteredAttachments = await db
-      .select()
-      .from(attachments)
-      .where(conditions.length === 1 ? conditions[0] : or(...conditions))
-      .all();
-
-    return filteredAttachments;
-  } catch (error) {
-    console.error('Error fetching attachments:', error);
-    throw error;
-  }
+    return false;
+  });
 });
 
-// Get attachment by ID
-ipcMain.handle('attachments:getById', async (_event, id: string) => {
-  try {
-    const attachment = await db.select().from(attachments).where(eq(attachments.id, id)).get();
-    return attachment || null;
-  } catch (error) {
-    console.error('Error fetching attachment:', error);
-    throw error;
-  }
+ipcMain.handle('attachments:getById', async (_, id: string) => {
+  const data = loadData();
+  return data.attachments.find(a => a.id === id);
 });
 
-// Create attachment
-ipcMain.handle('attachments:create', async (_event, data: AttachmentInput) => {
-  try {
-    const newAttachment = {
-      id: nanoid(),
-      taskId: data.taskId || null,
-      projectId: data.projectId || null,
-      filename: data.filename,
-      filepath: data.filepath,
-      fileType: data.fileType || null,
-      fileSize: data.fileSize || null,
-      createdAt: new Date().toISOString(),
-    };
-
-    await db.insert(attachments).values(newAttachment).run();
-
-    return newAttachment;
-  } catch (error) {
-    console.error('Error creating attachment:', error);
-    throw error;
-  }
+ipcMain.handle('attachments:create', async (_, attachment) => {
+  const data = loadData();
+  const newAttachment = {
+    ...attachment,
+    id: nanoid(),
+    createdAt: new Date().toISOString()
+  };
+  data.attachments.push(newAttachment);
+  saveData(data);
+  return newAttachment;
 });
 
-// Delete attachment
-ipcMain.handle('attachments:delete', async (_event, id: string) => {
-  try {
-    await db.delete(attachments).where(eq(attachments.id, id)).run();
-  } catch (error) {
-    console.error('Error deleting attachment:', error);
-    throw error;
-  }
+ipcMain.handle('attachments:delete', async (_, id: string) => {
+  const data = loadData();
+  data.attachments = data.attachments.filter(a => a.id !== id);
+  saveData(data);
 });

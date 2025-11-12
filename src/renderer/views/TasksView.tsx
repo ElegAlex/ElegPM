@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from 'react';
-import { Plus, Filter, Clock, User, Edit2, Trash2, Download, Upload } from 'lucide-react';
+import React, { useEffect, useState, useMemo } from 'react';
+import { Plus, Filter, Clock, User, Edit2, Trash2, Download, Upload, Tag, X } from 'lucide-react';
 import { useTasksStore } from '../stores/tasksStore';
 import { useProjectsStore } from '../stores/projectsStore';
 import { TaskForm } from '../components/TaskForm';
@@ -26,6 +26,7 @@ export const TasksView: React.FC = () => {
   const { tasks, isLoading, error, fetchTasks, updateTaskStatus, deleteTask, createTask } = useTasksStore();
   const { projects, fetchProjects } = useProjectsStore();
   const [selectedProject, setSelectedProject] = useState<string>('all');
+  const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [showForm, setShowForm] = useState(false);
   const [editingTask, setEditingTask] = useState<Task | null>(null);
   const [draggedTask, setDraggedTask] = useState<Task | null>(null);
@@ -37,9 +38,47 @@ export const TasksView: React.FC = () => {
     fetchTasks();
   }, [fetchProjects, fetchTasks]);
 
-  const filteredTasks = selectedProject === 'all'
+  // Helper function to parse tags from a task
+  const parseTaskTags = (task: Task): string[] => {
+    if (!task.tags) return [];
+    if (typeof task.tags === 'string') {
+      try {
+        return JSON.parse(task.tags);
+      } catch (e) {
+        return [];
+      }
+    }
+    if (Array.isArray(task.tags)) {
+      return task.tags;
+    }
+    return [];
+  };
+
+  // Get all unique tags
+  const allTags = useMemo(() => {
+    const tagsSet = new Set<string>();
+    tasks.forEach(task => {
+      const tags = parseTaskTags(task);
+      tags.forEach(tag => tagsSet.add(tag));
+    });
+    return Array.from(tagsSet).sort();
+  }, [tasks]);
+
+  // Filter by project first
+  const projectFilteredTasks = selectedProject === 'all'
     ? tasks
     : tasks.filter(task => task.projectId === selectedProject);
+
+  // Then filter by tags
+  const filteredTasks = useMemo(() => {
+    if (selectedTags.length === 0) {
+      return projectFilteredTasks;
+    }
+    return projectFilteredTasks.filter(task => {
+      const taskTags = parseTaskTags(task);
+      return selectedTags.some(selectedTag => taskTags.includes(selectedTag));
+    });
+  }, [projectFilteredTasks, selectedTags]);
 
   const tasksByStatus = (status: TaskStatus) =>
     filteredTasks.filter(task => task.status === status);
@@ -161,7 +200,7 @@ export const TasksView: React.FC = () => {
   return (
     <div className="h-full flex flex-col">
       {/* Header Actions */}
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-3">
           <Filter className="w-5 h-5 text-gray-500" />
           <select
@@ -205,6 +244,58 @@ export const TasksView: React.FC = () => {
           </button>
         </div>
       </div>
+
+      {/* Tag Filter Section */}
+      <div className="mb-4 p-3 bg-gray-50 rounded-lg border border-gray-200">
+          <div className="flex items-center gap-2 mb-2">
+            <Tag className="w-4 h-4 text-gray-600" />
+            <span className="text-sm font-medium text-gray-700">Filtrer par tags:</span>
+            {selectedTags.length > 0 && (
+              <button
+                onClick={() => setSelectedTags([])}
+                className="text-xs text-blue-600 hover:text-blue-800 ml-auto"
+              >
+                Réinitialiser
+              </button>
+            )}
+          </div>
+          <div className="flex flex-wrap gap-2">
+            {allTags.map((tag) => {
+              const isSelected = selectedTags.includes(tag);
+              return (
+                <button
+                  key={tag}
+                  onClick={() => {
+                    if (isSelected) {
+                      setSelectedTags(selectedTags.filter(t => t !== tag));
+                    } else {
+                      setSelectedTags([...selectedTags, tag]);
+                    }
+                  }}
+                  className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-sm transition-all ${
+                    isSelected
+                      ? 'bg-blue-500 text-white shadow-sm'
+                      : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-100'
+                  }`}
+                >
+                  <Tag className="w-3 h-3" />
+                  {tag}
+                  {isSelected && <X className="w-3 h-3 ml-1" />}
+                </button>
+              );
+            })}
+          </div>
+          {selectedTags.length > 0 && (
+            <div className="mt-2 text-xs text-gray-600">
+              {filteredTasks.length} tâche(s) affichée(s) sur {projectFilteredTasks.length}
+            </div>
+          )}
+          {allTags.length === 0 && (
+            <div className="text-sm text-gray-500 italic">
+              Aucun tag disponible. Ajoutez des tags aux tâches pour les filtrer.
+            </div>
+          )}
+        </div>
 
       {/* Error Message */}
       {error && (

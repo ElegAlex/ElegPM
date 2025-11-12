@@ -13,10 +13,15 @@ export interface ElectronAPI {
   // Test API
   ping: () => Promise<string>;
 
+  // System API
+  openExternal: (url: string) => Promise<void>;
+
   // Projects API
   projects: {
     getAll: () => Promise<Project[]>;
+    getAllWithProgress: () => Promise<Project[]>;
     getById: (id: string) => Promise<Project | null>;
+    getWithProgress: (id: string) => Promise<Project | null>;
     create: (data: ProjectInput) => Promise<Project>;
     update: (id: string, data: Partial<ProjectInput>) => Promise<Project>;
     delete: (id: string) => Promise<void>;
@@ -121,9 +126,13 @@ export interface ElectronAPI {
 const api: ElectronAPI = {
   ping: () => ipcRenderer.invoke('ping'),
 
+  openExternal: (url) => ipcRenderer.invoke('open-external', url),
+
   projects: {
     getAll: () => ipcRenderer.invoke('projects:getAll'),
+    getAllWithProgress: () => ipcRenderer.invoke('projects:getAllWithProgress'),
     getById: (id) => ipcRenderer.invoke('projects:getById', id),
+    getWithProgress: (id) => ipcRenderer.invoke('projects:getWithProgress', id),
     create: (data) => ipcRenderer.invoke('projects:create', data),
     update: (id, data) => ipcRenderer.invoke('projects:update', id, data),
     delete: (id) => ipcRenderer.invoke('projects:delete', id),

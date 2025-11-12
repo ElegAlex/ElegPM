@@ -792,7 +792,7 @@ export const ProjectDetailView: React.FC<ProjectDetailViewProps> = ({ projectId,
           </div>
           <div className="text-right">
             <div className="text-sm text-gray-600 mb-1">Progression</div>
-            <div className="text-3xl font-bold text-gray-900">{project.progress}%</div>
+            <div className="text-3xl font-bold text-gray-900">{projectStats.completionRate}%</div>
           </div>
         </div>
 
@@ -801,7 +801,7 @@ export const ProjectDetailView: React.FC<ProjectDetailViewProps> = ({ projectId,
           <div className="w-full bg-gray-200 rounded-full h-2">
             <div
               className="bg-blue-600 h-2 rounded-full transition-all"
-              style={{ width: `${project.progress}%` }}
+              style={{ width: `${projectStats.completionRate}%` }}
             />
           </div>
         </div>
@@ -899,8 +899,7 @@ export const ProjectDetailView: React.FC<ProjectDetailViewProps> = ({ projectId,
             </div>
 
             {/* Tag Filter Section */}
-            {allTags.length > 0 && (
-              <div className="mb-4 p-3 bg-gray-50 rounded-lg border border-gray-200">
+            <div className="mb-4 p-3 bg-gray-50 rounded-lg border border-gray-200">
                 <div className="flex items-center gap-2 mb-2">
                   <Tag className="w-4 h-4 text-gray-600" />
                   <span className="text-sm font-medium text-gray-700">Filtrer par tags:</span>
@@ -944,8 +943,12 @@ export const ProjectDetailView: React.FC<ProjectDetailViewProps> = ({ projectId,
                     {filteredProjectTasks.length} tâche(s) affichée(s) sur {projectTasks.length}
                   </div>
                 )}
+                {allTags.length === 0 && (
+                  <div className="text-sm text-gray-500 italic">
+                    Aucun tag disponible. Ajoutez des tags aux tâches pour les filtrer.
+                  </div>
+                )}
               </div>
-            )}
 
             {projectTasks.length === 0 ? (
               <div className="text-center py-12 bg-gray-50 rounded-lg">
@@ -1615,13 +1618,13 @@ export const ProjectDetailView: React.FC<ProjectDetailViewProps> = ({ projectId,
                       <div className="border-t border-gray-200 pt-4">
                         <div className="flex items-center justify-between mb-2">
                           <span className="text-sm font-medium text-gray-700">Progression globale</span>
-                          <span className="text-sm text-gray-600">{project.progress}%</span>
+                          <span className="text-sm text-gray-600">{projectStats.completionRate}%</span>
                         </div>
                         <div className="w-full bg-gray-200 rounded-full h-3">
                           <div
                             className="h-3 rounded-full transition-all"
                             style={{
-                              width: `${project.progress}%`,
+                              width: `${projectStats.completionRate}%`,
                               backgroundColor: project.color
                             }}
                           />

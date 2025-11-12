@@ -8,18 +8,6 @@ module.exports = {
       /^\/\.webpack($|\/)/,
       /^\/out($|\/)/,
     ],
-    // Rebuild native modules for target platform
-    afterCopy: [
-      (buildPath, electronVersion, platform, arch, callback) => {
-        const { exec } = require('child_process');
-        exec('npm rebuild better-sqlite3 --build-from-source', {
-          cwd: buildPath
-        }, (error) => {
-          if (error) console.error('Rebuild error:', error);
-          callback();
-        });
-      }
-    ],
   },
   rebuildConfig: {},
   makers: [
@@ -27,29 +15,8 @@ module.exports = {
       name: '@electron-forge/maker-zip',
       platforms: ['win32', 'linux', 'darwin'],
     },
-    // Squirrel maker disabled on Linux (requires Wine/Mono)
-    // {
-    //   name: '@electron-forge/maker-squirrel',
-    //   config: {
-    //     name: 'GestionProjet',
-    //     authors: 'Alexandre Légaré',
-    //     description: 'Application de gestion de projet professionnelle',
-    //   },
-    // },
-    {
-      name: '@electron-forge/maker-deb',
-      config: {},
-    },
-    {
-      name: '@electron-forge/maker-rpm',
-      config: {},
-    },
   ],
   plugins: [
-    {
-      name: '@electron-forge/plugin-auto-unpack-natives',
-      config: {},
-    },
     {
       name: '@electron-forge/plugin-webpack',
       config: {

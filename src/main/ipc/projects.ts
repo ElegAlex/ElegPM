@@ -1,99 +1,84 @@
 import { ipcMain } from 'electron';
-import { eq, like } from 'drizzle-orm';
+import { loadData, saveData } from '../database/storage';
 import { nanoid } from 'nanoid';
-import db from '../database/db';
-import { projects } from '../database/schema';
-import type { ProjectInput } from '../../renderer/types/project';
 
-// Get all projects
 ipcMain.handle('projects:getAll', async () => {
-  try {
-    const allProjects = await db.select().from(projects).all();
-    return allProjects;
-  } catch (error) {
-    console.error('Error fetching projects:', error);
-    throw error;
-  }
+  const data = loadData();
+  return data.projects;
 });
 
-// Get project by ID
-ipcMain.handle('projects:getById', async (_event, id: string) => {
-  try {
-    const project = await db.select().from(projects).where(eq(projects.id, id)).get();
-    return project || null;
-  } catch (error) {
-    console.error('Error fetching project:', error);
-    throw error;
-  }
+ipcMain.handle('projects:getById', async (_, id: string) => {
+  const data = loadData();
+  return data.projects.find(p => p.id === id);
 });
 
-// Create project
-ipcMain.handle('projects:create', async (_event, data: ProjectInput) => {
-  try {
-    const newProject = {
-      id: nanoid(),
-      name: data.name,
-      description: data.description || null,
-      status: data.status || 'not_started',
-      priority: data.priority || 'medium',
-      startDate: data.startDate || null,
-      endDate: data.endDate || null,
-      progress: 0,
-      color: data.color || '#3B82F6',
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
+ipcMain.handle('projects:create', async (_, project) => {
+  const data = loadData();
+  const newProject = {
+    ...project,
+    id: nanoid(),
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString()
+  };
+  data.projects.push(newProject);
+  saveData(data);
+  return newProject;
+});
+
+ipcMain.handle('projects:update', async (_, id: string, updates) => {
+  const data = loadData();
+  const index = data.projects.findIndex(p => p.id === id);
+  if (index === -1) throw new Error('Project not found');
+
+  data.projects[index] = {
+    ...data.projects[index],
+    ...updates,
+    updatedAt: new Date().toISOString()
+  };
+  saveData(data);
+  return data.projects[index];
+});
+
+ipcMain.handle('projects:delete', async (_, id: string) => {
+  const data = loadData();
+  data.projects = data.projects.filter(p => p.id !== id);
+  saveData(data);
+});
+
+ipcMain.handle('projects:getWithProgress', async (_, projectId: string) => {
+  const data = loadData();
+  const project = data.projects.find(p => p.id === projectId);
+  if (!project) throw new Error('Project not found');
+
+  // Calculer la progression basée sur les tâches
+  const tasks = data.tasks.filter(t => t.projectId === projectId);
+  const totalTasks = tasks.length;
+  const completedTasks = tasks.filter(t => t.status === 'done' || t.status === 'completed').length;
+
+  const progress = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
+
+  return {
+    ...project,
+    progress,
+    totalTasks,
+    completedTasks
+  };
+});
+
+ipcMain.handle('projects:getAllWithProgress', async () => {
+  const data = loadData();
+
+  return data.projects.map(project => {
+    const tasks = data.tasks.filter(t => t.projectId === project.id);
+    const totalTasks = tasks.length;
+    const completedTasks = tasks.filter(t => t.status === 'done' || t.status === 'completed').length;
+    const progress = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
+
+    return {
+      ...project,
+      progress,
+      totalTasks,
+      completedTasks
     };
-
-    await db.insert(projects).values(newProject).run();
-
-    return newProject;
-  } catch (error) {
-    console.error('Error creating project:', error);
-    throw error;
-  }
-});
-
-// Update project
-ipcMain.handle('projects:update', async (_event, id: string, data: Partial<ProjectInput>) => {
-  try {
-    const updateData = {
-      ...data,
-      updatedAt: new Date().toISOString(),
-    };
-
-    await db.update(projects).set(updateData).where(eq(projects.id, id)).run();
-
-    const updatedProject = await db.select().from(projects).where(eq(projects.id, id)).get();
-
-    return updatedProject;
-  } catch (error) {
-    console.error('Error updating project:', error);
-    throw error;
-  }
-});
-
-// Delete project
-ipcMain.handle('projects:delete', async (_event, id: string) => {
-  try {
-    await db.delete(projects).where(eq(projects.id, id)).run();
-  } catch (error) {
-    console.error('Error deleting project:', error);
-    throw error;
-  }
-});
-
-// Search projects
-ipcMain.handle('projects:search', async (_event, query: string) => {
-  try {
-    const results = await db
-      .select()
-      .from(projects)
-      .where(like(projects.name, `%${query}%`))
-      .all();
-
-    return results;
-  } catch (error) {
-    console.error('Error searching projects:', error);
-    throw error;
-  }
+  });
 });

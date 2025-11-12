@@ -1,137 +1,86 @@
 import { ipcMain } from 'electron';
-import { eq, and } from 'drizzle-orm';
+import { loadData, saveData } from '../database/storage';
 import { nanoid } from 'nanoid';
-import db from '../database/db';
-import { taskAssignments } from '../database/schema';
-import type { TaskAssignmentInput } from '../../renderer/types/taskAssignment';
 
-// Get all task assignments with optional filters
-ipcMain.handle('taskAssignments:getAll', async (_event, options?: { taskId?: string; resourceId?: string }) => {
-  try {
-    let query = db.select().from(taskAssignments);
+ipcMain.handle('taskAssignments:getAll', async (_, options?: { taskId?: string; resourceId?: string }) => {
+  const data = loadData();
 
-    if (options?.taskId && options?.resourceId) {
-      query = query.where(
-        and(
-          eq(taskAssignments.taskId, options.taskId),
-          eq(taskAssignments.resourceId, options.resourceId)
-        )
-      ) as any;
-    } else if (options?.taskId) {
-      query = query.where(eq(taskAssignments.taskId, options.taskId)) as any;
-    } else if (options?.resourceId) {
-      query = query.where(eq(taskAssignments.resourceId, options.resourceId)) as any;
+  if (!options || (!options.taskId && !options.resourceId)) {
+    return data.taskAssignments;
+  }
+
+  return data.taskAssignments.filter(ta => {
+    if (options.taskId && options.resourceId) {
+      return ta.taskId === options.taskId && ta.resourceId === options.resourceId;
     }
-
-    const allAssignments = await query.all();
-    return allAssignments;
-  } catch (error) {
-    console.error('Error fetching task assignments:', error);
-    throw error;
-  }
-});
-
-// Get task assignment by ID
-ipcMain.handle('taskAssignments:getById', async (_event, id: string) => {
-  try {
-    const assignment = await db
-      .select()
-      .from(taskAssignments)
-      .where(eq(taskAssignments.id, id))
-      .get();
-    return assignment || null;
-  } catch (error) {
-    console.error('Error fetching task assignment:', error);
-    throw error;
-  }
-});
-
-// Create task assignment
-ipcMain.handle('taskAssignments:create', async (_event, data: TaskAssignmentInput) => {
-  try {
-    const newAssignment = {
-      id: nanoid(),
-      taskId: data.taskId,
-      resourceId: data.resourceId,
-      allocationPercentage: data.allocationPercentage ?? 100,
-      createdAt: new Date().toISOString(),
-    };
-
-    await db.insert(taskAssignments).values(newAssignment).run();
-
-    return newAssignment;
-  } catch (error) {
-    console.error('Error creating task assignment:', error);
-    throw error;
-  }
-});
-
-// Update task assignment
-ipcMain.handle('taskAssignments:update', async (_event, id: string, data: Partial<TaskAssignmentInput>) => {
-  try {
-    await db.update(taskAssignments).set(data).where(eq(taskAssignments.id, id)).run();
-
-    const updatedAssignment = await db
-      .select()
-      .from(taskAssignments)
-      .where(eq(taskAssignments.id, id))
-      .get();
-
-    return updatedAssignment;
-  } catch (error) {
-    console.error('Error updating task assignment:', error);
-    throw error;
-  }
-});
-
-// Delete task assignment
-ipcMain.handle('taskAssignments:delete', async (_event, id: string) => {
-  try {
-    await db.delete(taskAssignments).where(eq(taskAssignments.id, id)).run();
-  } catch (error) {
-    console.error('Error deleting task assignment:', error);
-    throw error;
-  }
-});
-
-// Assign multiple resources to a task (convenience method)
-ipcMain.handle('taskAssignments:assignResources', async (_event, taskId: string, resourceIds: string[], allocationPercentage?: number) => {
-  try {
-    const assignments = resourceIds.map(resourceId => ({
-      id: nanoid(),
-      taskId,
-      resourceId,
-      allocationPercentage: allocationPercentage ?? 100,
-      createdAt: new Date().toISOString(),
-    }));
-
-    // Delete existing assignments for this task
-    await db.delete(taskAssignments).where(eq(taskAssignments.taskId, taskId)).run();
-
-    // Insert new assignments
-    if (assignments.length > 0) {
-      await db.insert(taskAssignments).values(assignments).run();
+    if (options.taskId) {
+      return ta.taskId === options.taskId;
     }
-
-    return assignments;
-  } catch (error) {
-    console.error('Error assigning resources to task:', error);
-    throw error;
-  }
+    if (options.resourceId) {
+      return ta.resourceId === options.resourceId;
+    }
+    return false;
+  });
 });
 
-// Get resource workload (all task assignments for a resource)
-ipcMain.handle('taskAssignments:getResourceWorkload', async (_event, resourceId: string) => {
-  try {
-    const assignments = await db
-      .select()
-      .from(taskAssignments)
-      .where(eq(taskAssignments.resourceId, resourceId))
-      .all();
+ipcMain.handle('taskAssignments:getById', async (_, id: string) => {
+  const data = loadData();
+  return data.taskAssignments.find(ta => ta.id === id);
+});
 
-    return assignments;
-  } catch (error) {
-    console.error('Error fetching resource workload:', error);
-    throw error;
-  }
+ipcMain.handle('taskAssignments:create', async (_, taskAssignment) => {
+  const data = loadData();
+  const newTaskAssignment = {
+    ...taskAssignment,
+    id: nanoid(),
+    allocationPercentage: taskAssignment.allocationPercentage ?? 100,
+    createdAt: new Date().toISOString()
+  };
+  data.taskAssignments.push(newTaskAssignment);
+  saveData(data);
+  return newTaskAssignment;
+});
+
+ipcMain.handle('taskAssignments:update', async (_, id: string, updates) => {
+  const data = loadData();
+  const index = data.taskAssignments.findIndex(ta => ta.id === id);
+  if (index === -1) throw new Error('Task assignment not found');
+
+  data.taskAssignments[index] = {
+    ...data.taskAssignments[index],
+    ...updates
+  };
+  saveData(data);
+  return data.taskAssignments[index];
+});
+
+ipcMain.handle('taskAssignments:delete', async (_, id: string) => {
+  const data = loadData();
+  data.taskAssignments = data.taskAssignments.filter(ta => ta.id !== id);
+  saveData(data);
+});
+
+ipcMain.handle('taskAssignments:assignResources', async (_, taskId: string, resourceIds: string[], allocationPercentage?: number) => {
+  const data = loadData();
+
+  // Delete existing assignments for this task
+  data.taskAssignments = data.taskAssignments.filter(ta => ta.taskId !== taskId);
+
+  // Create new assignments
+  const assignments = resourceIds.map(resourceId => ({
+    id: nanoid(),
+    taskId,
+    resourceId,
+    allocationPercentage: allocationPercentage ?? 100,
+    createdAt: new Date().toISOString()
+  }));
+
+  data.taskAssignments.push(...assignments);
+  saveData(data);
+  return assignments;
+});
+
+ipcMain.handle('taskAssignments:getResourceWorkload', async (_, resourceId: string) => {
+  const data = loadData();
+  return data.taskAssignments.filter(ta => ta.resourceId === resourceId);
 });

@@ -1,80 +1,44 @@
 import { ipcMain } from 'electron';
-import { eq } from 'drizzle-orm';
+import { loadData, saveData } from '../database/storage';
 import { nanoid } from 'nanoid';
-import db from '../database/db';
-import { resources } from '../database/schema';
-import type { ResourceInput } from '../../renderer/types/resource';
 
-// Get all resources
 ipcMain.handle('resources:getAll', async () => {
-  try {
-    const allResources = await db.select().from(resources).all();
-    return allResources;
-  } catch (error) {
-    console.error('Error fetching resources:', error);
-    throw error;
-  }
+  const data = loadData();
+  return data.resources;
 });
 
-// Get resource by ID
-ipcMain.handle('resources:getById', async (_event, id: string) => {
-  try {
-    const resource = await db.select().from(resources).where(eq(resources.id, id)).get();
-    return resource || null;
-  } catch (error) {
-    console.error('Error fetching resource:', error);
-    throw error;
-  }
+ipcMain.handle('resources:getById', async (_, id: string) => {
+  const data = loadData();
+  return data.resources.find(r => r.id === id);
 });
 
-// Create resource
-ipcMain.handle('resources:create', async (_event, data: ResourceInput) => {
-  try {
-    const newResource = {
-      id: nanoid(),
-      name: data.name,
-      role: data.role || null,
-      email: data.email || null,
-      department: data.department || null,
-      availability: data.availability ?? 100,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    };
-
-    await db.insert(resources).values(newResource).run();
-
-    return newResource;
-  } catch (error) {
-    console.error('Error creating resource:', error);
-    throw error;
-  }
+ipcMain.handle('resources:create', async (_, resource) => {
+  const data = loadData();
+  const newResource = {
+    ...resource,
+    id: nanoid(),
+    createdAt: new Date().toISOString()
+  };
+  data.resources.push(newResource);
+  saveData(data);
+  return newResource;
 });
 
-// Update resource
-ipcMain.handle('resources:update', async (_event, id: string, data: Partial<ResourceInput>) => {
-  try {
-    const updateData = {
-      ...data,
-      updatedAt: new Date().toISOString(),
-    };
+ipcMain.handle('resources:update', async (_, id: string, updates) => {
+  const data = loadData();
+  const index = data.resources.findIndex(r => r.id === id);
+  if (index === -1) throw new Error('Resource not found');
 
-    await db.update(resources).set(updateData).where(eq(resources.id, id)).run();
-
-    const updatedResource = await db.select().from(resources).where(eq(resources.id, id)).get();
-
-    return updatedResource;
-  } catch (error) {
-    console.error('Error updating resource:', error);
-    throw error;
-  }
+  data.resources[index] = {
+    ...data.resources[index],
+    ...updates
+  };
+  saveData(data);
+  return data.resources[index];
 });
 
-// Delete resource
-ipcMain.handle('resources:delete', async (_event, id: string) => {
-  try {
-    await db.delete(resources).where(eq(resources.id, id)).run();
-  } catch (error) {
-    console.error('Error deleting resource:', error);
-    throw error;
-  }
+ipcMain.handle('resources:delete', async (_, id: string) => {
+  const data = loadData();
+  data.resources = data.resources.filter(r => r.id !== id);
+  saveData(data);
 });

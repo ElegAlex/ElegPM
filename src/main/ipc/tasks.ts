@@ -1,157 +1,136 @@
 import { ipcMain } from 'electron';
-import { eq } from 'drizzle-orm';
+import { loadData, saveData } from '../database/storage';
 import { nanoid } from 'nanoid';
-import db from '../database/db';
-import { tasks } from '../database/schema';
-import type { TaskInput } from '../../renderer/types/task';
 
-// Get all tasks (optionally filtered by project)
-ipcMain.handle('tasks:getAll', async (_event, projectId?: string) => {
-  try {
-    if (projectId) {
-      const projectTasks = await db
-        .select()
-        .from(tasks)
-        .where(eq(tasks.projectId, projectId))
-        .all();
-      return projectTasks;
-    } else {
-      const allTasks = await db.select().from(tasks).all();
-      return allTasks;
+ipcMain.handle('tasks:getAll', async (_, projectId?: string) => {
+  const data = loadData();
+  if (projectId) {
+    return data.tasks.filter(t => t.projectId === projectId);
+  }
+  return data.tasks;
+});
+
+ipcMain.handle('tasks:getById', async (_, id: string) => {
+  const data = loadData();
+  return data.tasks.find(t => t.id === id);
+});
+
+ipcMain.handle('tasks:getByProject', async (_, projectId: string) => {
+  const data = loadData();
+  return data.tasks.filter(t => t.projectId === projectId);
+});
+
+ipcMain.handle('tasks:create', async (_, task) => {
+  const data = loadData();
+  const newTask = {
+    ...task,
+    id: nanoid(),
+    tags: task.tags || [],
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString()
+  };
+  data.tasks.push(newTask);
+  saveData(data);
+  return newTask;
+});
+
+ipcMain.handle('tasks:update', async (_, id: string, updates) => {
+  const data = loadData();
+  const index = data.tasks.findIndex(t => t.id === id);
+  if (index === -1) throw new Error('Task not found');
+
+  data.tasks[index] = {
+    ...data.tasks[index],
+    ...updates,
+    updatedAt: new Date().toISOString()
+  };
+  saveData(data);
+  return data.tasks[index];
+});
+
+ipcMain.handle('tasks:updateStatus', async (_, id: string, status: string) => {
+  const data = loadData();
+  const index = data.tasks.findIndex(t => t.id === id);
+  if (index === -1) throw new Error('Task not found');
+
+  data.tasks[index] = {
+    ...data.tasks[index],
+    status,
+    updatedAt: new Date().toISOString()
+  };
+  saveData(data);
+  return data.tasks[index];
+});
+
+ipcMain.handle('tasks:delete', async (_, id: string) => {
+  const data = loadData();
+  data.tasks = data.tasks.filter(t => t.id !== id);
+  saveData(data);
+});
+
+ipcMain.handle('tasks:reorder', async (_, taskId: string, newIndex: number) => {
+  const data = loadData();
+  const index = data.tasks.findIndex(t => t.id === taskId);
+  if (index === -1) throw new Error('Task not found');
+
+  data.tasks[index] = {
+    ...data.tasks[index],
+    orderIndex: newIndex,
+    updatedAt: new Date().toISOString()
+  };
+  saveData(data);
+});
+
+ipcMain.handle('tasks:move', async (_, taskId: string, newParentId: string | null) => {
+  const data = loadData();
+  const index = data.tasks.findIndex(t => t.id === taskId);
+  if (index === -1) throw new Error('Task not found');
+
+  data.tasks[index] = {
+    ...data.tasks[index],
+    parentTaskId: newParentId,
+    updatedAt: new Date().toISOString()
+  };
+  saveData(data);
+});
+
+ipcMain.handle('tasks:getByTags', async (_, tags: string[]) => {
+  const data = loadData();
+
+  if (!tags || tags.length === 0) {
+    return data.tasks;
+  }
+
+  // Filtrer les tâches qui ont AU MOINS UN des tags demandés
+  return data.tasks.filter(task => {
+    if (!task.tags || !Array.isArray(task.tags)) return false;
+    return tags.some(tag => task.tags.includes(tag));
+  });
+});
+
+ipcMain.handle('tasks:getByProjectAndTags', async (_, projectId: string, tags: string[]) => {
+  const data = loadData();
+  let tasks = data.tasks.filter(t => t.projectId === projectId);
+
+  if (tags && tags.length > 0) {
+    tasks = tasks.filter(task => {
+      if (!task.tags || !Array.isArray(task.tags)) return false;
+      return tags.some(tag => task.tags.includes(tag));
+    });
+  }
+
+  return tasks;
+});
+
+ipcMain.handle('tasks:getAllTags', async () => {
+  const data = loadData();
+  const allTags = new Set<string>();
+
+  data.tasks.forEach(task => {
+    if (task.tags && Array.isArray(task.tags)) {
+      task.tags.forEach(tag => allTags.add(tag));
     }
-  } catch (error) {
-    console.error('Error fetching tasks:', error);
-    throw error;
-  }
-});
+  });
 
-// Get task by ID
-ipcMain.handle('tasks:getById', async (_event, id: string) => {
-  try {
-    const task = await db.select().from(tasks).where(eq(tasks.id, id)).get();
-    return task || null;
-  } catch (error) {
-    console.error('Error fetching task:', error);
-    throw error;
-  }
-});
-
-// Create task
-ipcMain.handle('tasks:create', async (_event, data: TaskInput) => {
-  try {
-    const newTask = {
-      id: nanoid(),
-      projectId: data.projectId,
-      title: data.title,
-      description: data.description || null,
-      status: data.status || 'todo',
-      priority: data.priority || 'medium',
-      assignee: data.assignee || null,
-      estimatedHours: data.estimatedHours || null,
-      actualHours: data.actualHours || null,
-      startDate: data.startDate || null,
-      endDate: data.endDate || null,
-      parentTaskId: data.parentTaskId || null,
-      milestoneId: data.milestoneId || null,
-      orderIndex: data.orderIndex || null,
-      tags: data.tags ? JSON.stringify(data.tags) : null,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    };
-
-    await db.insert(tasks).values(newTask).run();
-
-    return newTask;
-  } catch (error) {
-    console.error('Error creating task:', error);
-    throw error;
-  }
-});
-
-// Update task
-ipcMain.handle('tasks:update', async (_event, id: string, data: Partial<TaskInput>) => {
-  try {
-    const updateData = {
-      ...data,
-      updatedAt: new Date().toISOString(),
-    } as any;
-
-    if (data.tags) {
-      updateData.tags = JSON.stringify(data.tags);
-    }
-
-    await db.update(tasks).set(updateData).where(eq(tasks.id, id)).run();
-
-    const updatedTask = await db.select().from(tasks).where(eq(tasks.id, id)).get();
-
-    return updatedTask;
-  } catch (error) {
-    console.error('Error updating task:', error);
-    throw error;
-  }
-});
-
-// Update task status
-ipcMain.handle('tasks:updateStatus', async (_event, id: string, status: string) => {
-  try {
-    await db
-      .update(tasks)
-      .set({
-        status: status as any,
-        updatedAt: new Date().toISOString(),
-      } as any)
-      .where(eq(tasks.id, id))
-      .run();
-
-    const updatedTask = await db.select().from(tasks).where(eq(tasks.id, id)).get();
-
-    return updatedTask;
-  } catch (error) {
-    console.error('Error updating task status:', error);
-    throw error;
-  }
-});
-
-// Delete task
-ipcMain.handle('tasks:delete', async (_event, id: string) => {
-  try {
-    await db.delete(tasks).where(eq(tasks.id, id)).run();
-  } catch (error) {
-    console.error('Error deleting task:', error);
-    throw error;
-  }
-});
-
-// Reorder task
-ipcMain.handle('tasks:reorder', async (_event, taskId: string, newIndex: number) => {
-  try {
-    await db
-      .update(tasks)
-      .set({
-        orderIndex: newIndex,
-        updatedAt: new Date().toISOString(),
-      } as any)
-      .where(eq(tasks.id, taskId))
-      .run();
-  } catch (error) {
-    console.error('Error reordering task:', error);
-    throw error;
-  }
-});
-
-// Move task to new parent
-ipcMain.handle('tasks:move', async (_event, taskId: string, newParentId: string | null) => {
-  try {
-    await db
-      .update(tasks)
-      .set({
-        parentTaskId: newParentId,
-        updatedAt: new Date().toISOString(),
-      } as any)
-      .where(eq(tasks.id, taskId))
-      .run();
-  } catch (error) {
-    console.error('Error moving task:', error);
-    throw error;
-  }
+  return Array.from(allTags).sort();
 });

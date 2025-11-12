@@ -1,5 +1,5 @@
-import { app, BrowserWindow, ipcMain } from 'electron';
-import { initializeDatabase } from './database/db';
+import { app, BrowserWindow, ipcMain, shell } from 'electron';
+import { initStorage } from './database/storage';
 import { setupPdfHandler } from './pdfHandler';
 
 // Declare webpack entry points
@@ -54,23 +54,29 @@ const createWindow = (): void => {
 
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.
-app.whenReady().then(() => {
-  // Initialize database
-  initializeDatabase();
+app.on('ready', async () => {
+  try {
+    initStorage();
+    console.log('✅ Storage initialized');
 
-  // Register IPC handlers
-  registerIPCHandlers();
+    registerIPCHandlers();
+    setupPdfHandler();
+    console.log('✅ IPC handlers registered');
 
-  // Create window
-  createWindow();
+    createWindow();
+    console.log('✅ Window created');
+  } catch (error) {
+    console.error('❌ Startup error:', error);
+    app.quit();
+  }
+});
 
-  // On macOS it's common to re-create a window in the app when the
-  // dock icon is clicked and there are no other windows open.
-  app.on('activate', () => {
-    if (BrowserWindow.getAllWindows().length === 0) {
-      createWindow();
-    }
-  });
+// On macOS it's common to re-create a window in the app when the
+// dock icon is clicked and there are no other windows open.
+app.on('activate', () => {
+  if (BrowserWindow.getAllWindows().length === 0) {
+    createWindow();
+  }
 });
 
 // Quit when all windows are closed, except on macOS.
@@ -93,13 +99,22 @@ function registerIPCHandlers() {
   require('./ipc/files');
   require('./ipc/activityLog');
 
-  // Setup PDF handler
-  setupPdfHandler();
-
   // Test handler
   ipcMain.handle('ping', async () => {
     console.log('Received ping');
     return 'pong';
+  });
+
+  // Open external URL handler
+  ipcMain.handle('open-external', async (_event, url: string) => {
+    console.log('Received request to open external URL:', url);
+    try {
+      await shell.openExternal(url);
+      console.log('Successfully opened URL:', url);
+    } catch (error) {
+      console.error('Error opening external URL:', error);
+      throw error;
+    }
   });
 }
 

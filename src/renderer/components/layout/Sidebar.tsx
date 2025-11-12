@@ -8,6 +8,9 @@ import {
   Users,
   BarChart3,
   FileDown,
+  Github,
+  Globe,
+  BookOpen,
 } from 'lucide-react';
 
 interface SidebarProps {
@@ -27,12 +30,22 @@ const Sidebar: React.FC<SidebarProps> = ({ currentView, onViewChange }) => {
     { id: 'exports', label: 'Export', icon: FileDown },
   ];
 
+  const handleExternalLink = async (url: string) => {
+    try {
+      console.log('Opening external link:', url);
+      console.log('window.api:', window.api);
+      await window.api.openExternal(url);
+      console.log('Link opened successfully');
+    } catch (error) {
+      console.error('Error opening external link:', error);
+    }
+  };
+
   return (
     <aside className="w-60 bg-sidebar border-r border-border h-screen flex flex-col">
       {/* Logo */}
       <div className="p-6 border-b border-border">
-        <h1 className="text-xl font-bold text-foreground">Gestion Projet</h1>
-        <p className="text-xs text-gray-500 mt-1">CPAM Île-de-France</p>
+        <h1 className="text-xl font-bold text-foreground">ElegPM</h1>
       </div>
 
       {/* Navigation */}
@@ -65,11 +78,39 @@ const Sidebar: React.FC<SidebarProps> = ({ currentView, onViewChange }) => {
         </ul>
       </nav>
 
+      {/* À propos */}
+      <div className="p-4 border-t border-border">
+        <h3 className="text-xs font-semibold text-gray-600 uppercase mb-2">À propos</h3>
+        <div className="space-y-1">
+          <button
+            onClick={() => handleExternalLink('https://github.com/ElegAlex/ElegPM')}
+            className="w-full flex items-center gap-2 px-2 py-1.5 rounded-md text-xs text-gray-600 hover:bg-gray-100 hover:text-gray-900 transition-colors"
+          >
+            <Github size={14} />
+            <span>GitHub du projet</span>
+          </button>
+          <button
+            onClick={() => handleExternalLink('https://elegartech.fr')}
+            className="w-full flex items-center gap-2 px-2 py-1.5 rounded-md text-xs text-gray-600 hover:bg-gray-100 hover:text-gray-900 transition-colors"
+          >
+            <Globe size={14} />
+            <span>Elegartech.fr</span>
+          </button>
+          <button
+            onClick={() => handleExternalLink('https://communs-numeriques.fr')}
+            className="w-full flex items-center gap-2 px-2 py-1.5 rounded-md text-xs text-gray-600 hover:bg-gray-100 hover:text-gray-900 transition-colors"
+          >
+            <BookOpen size={14} />
+            <span>Communs Numériques</span>
+          </button>
+        </div>
+      </div>
+
       {/* Footer */}
       <div className="p-4 border-t border-border">
         <div className="text-xs text-gray-500">
           <p>Version 1.0.0</p>
-          <p className="mt-1">© 2025 CPAM IDF</p>
+          <p className="mt-1">2025 Elegartech.fr</p>
         </div>
       </div>
     </aside>

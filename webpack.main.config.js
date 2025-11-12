@@ -1,3 +1,5 @@
+const path = require('path');
+
 module.exports = {
   entry: './src/main/index.ts',
   target: 'electron-main',
@@ -7,9 +9,9 @@ module.exports = {
   resolve: {
     extensions: ['.js', '.ts', '.jsx', '.tsx', '.css', '.json'],
     alias: {
-      '@': require('path').resolve(__dirname, 'src'),
-      '@main': require('path').resolve(__dirname, 'src/main'),
-      '@renderer': require('path').resolve(__dirname, 'src/renderer'),
+      '@': path.resolve(__dirname, 'src'),
+      '@main': path.resolve(__dirname, 'src/main'),
+      '@renderer': path.resolve(__dirname, 'src/renderer'),
     },
   },
   node: {
