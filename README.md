@@ -1,5 +1,8 @@
 # ElegPM - Project Management Desktop Application
 
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
+[![Platform](https://img.shields.io/badge/Platform-Windows%20%7C%20Linux-lightgrey.svg)]()
+
 > Modern desktop project management application inspired by Linear, with JSON file storage and React/TypeScript interface. Deployable as a standalone executable for local use without network dependencies.
 
 ---
@@ -257,7 +260,9 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 
 ## 📄 License
 
-Proprietary - © 2025 Elegartech.fr
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+Copyright (c) 2025 Alexandre BERGE
 
 ---
 

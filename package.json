@@ -24,7 +24,7 @@
     "name": "Alexandre BERGE",
     "email": "contact@elegartech.fr"
   },
-  "license": "PROPRIETARY",
+  "license": "MIT",
   "config": {
     "forge": {
       "packagerConfig": {
