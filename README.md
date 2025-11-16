@@ -1,248 +1,248 @@
-# ElegPM - Project Management Desktop Application
+# ElegPM - Application de Gestion de Projet
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
-[![Platform](https://img.shields.io/badge/Platform-Windows%20%7C%20Linux-lightgrey.svg)]()
+[![Platform](https://img.shields.io/badge/Plateforme-Windows%20%7C%20Linux-lightgrey.svg)]()
 [![GitHub release](https://img.shields.io/github/v/release/ElegAlex/ElegPM)](https://github.com/ElegAlex/ElegPM/releases/latest)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.4-blue.svg)]()
 [![React](https://img.shields.io/badge/React-18.3-61dafb.svg)]()
 [![Electron](https://img.shields.io/badge/Electron-30.0-47848f.svg)]()
 
-> Modern desktop project management application inspired by Linear, with JSON file storage and React/TypeScript interface. Deployable as a standalone executable for local use without network dependencies.
+> Application desktop moderne de gestion de projet inspirée de Linear, avec stockage JSON local et interface React/TypeScript. Déployable en exécutable autonome pour une utilisation locale sans dépendances réseau.
 
-## 📦 Download
+## 📦 Téléchargement
 
-**Ready to use! Download the latest version for your platform:**
+**Prêt à l'emploi ! Téléchargez la dernière version pour votre plateforme :**
 
 <div align="center">
 
-### [⬇️ Download for Linux (101 MB)](https://github.com/ElegAlex/ElegPM/releases/download/v1.0.0/ElegPM-linux-x64-1.0.0.zip)
+### [⬇️ Télécharger pour Linux (101 MB)](https://github.com/ElegAlex/ElegPM/releases/download/v1.0.0/ElegPM-linux-x64-1.0.0.zip)
 
-### [⬇️ Download for Windows (105 MB)](https://github.com/ElegAlex/ElegPM/releases/download/v1.0.0/ElegPM-win32-x64-1.0.0.zip)
+### [⬇️ Télécharger pour Windows (105 MB)](https://github.com/ElegAlex/ElegPM/releases/download/v1.0.0/ElegPM-win32-x64-1.0.0.zip)
 
-**or view all releases →** [GitHub Releases](https://github.com/ElegAlex/ElegPM/releases)
+**ou voir toutes les versions →** [GitHub Releases](https://github.com/ElegAlex/ElegPM/releases)
 
 </div>
 
-### Quick Start
+### Démarrage Rapide
 
-1. **Download** the .zip file for your OS
-2. **Extract** the archive
-3. **Run** the executable:
-   - Linux: `./elegpm`
-   - Windows: `elegpm.exe`
+1. **Téléchargez** le fichier .zip pour votre système
+2. **Extrayez** l'archive
+3. **Lancez** l'exécutable :
+   - Linux : `./elegpm`
+   - Windows : `elegpm.exe`
 
-No installation required! Just extract and run.
-
----
-
-## 📋 Overview
-
-ElegPM is a desktop application designed to track complex projects in environments where external hosting is difficult to validate. A perfect standalone solution for local use with easy export capabilities for sharing.
-
-### Main Use Cases
-
-Track projects involving:
-- Multiple resources and activities
-- Workshops and team collaboration
-- Organization by service/department
-- Deliverables with milestones
-- Detailed planning and scheduling
-- Export capabilities for sharing and reporting
-
-**Problems Solved**:
-- ✅ No dependency on external hosting
-- ✅ Simple installation on Windows/Linux
-- ✅ PDF/Excel export for offline sharing
-- ✅ Ergonomic and intuitive interface
-- ✅ Performant local file-based storage
-- ✅ Import existing projects from Excel
+Aucune installation requise ! Extrayez et exécutez.
 
 ---
 
-## 🎯 Main Features
+## 📋 Vue d'ensemble
 
-### Project Management
-- Create/edit/delete projects
-- 5 statuses (not started, in progress, paused, completed, archived)
-- 4 priority levels (low, medium, high, urgent)
-- Automatic progress tracking
-- Customizable color coding
+ElegPM est une application desktop conçue pour suivre des projets complexes dans des environnements où l'hébergement externe est difficile à valider. Une solution standalone parfaite pour une utilisation locale avec des capacités d'export faciles pour le partage.
 
-### Task Management
-- Hierarchical organization (tasks/subtasks)
-- 5 statuses (to do, in progress, review, done, blocked)
-- Resource assignment
-- Estimation vs actual time
-- Customizable tags
-- Comments and attachments
-- Task dependencies
+### Cas d'usage principaux
 
-### Visualizations
-- **Dashboard**: Overview with statistics and recent activity
-- **List View**: Hierarchical task organization
-- **Kanban View**: Organization by status with drag & drop
-- **Gantt Chart**: Timeline with milestones and dependencies
-- **Resource View**: Workload and allocation
+Suivi de projets impliquant :
+- Plusieurs ressources et activités
+- Ateliers et collaboration d'équipe
+- Organisation par service/département
+- Livrables avec jalons
+- Planification et ordonnancement détaillés
+- Capacités d'export pour le partage et le reporting
 
-### Milestones
-- Target date definition
-- 3 statuses (pending, achieved, missed)
-- Display in Gantt chart
-- Alerts for upcoming milestones
+**Problèmes résolus** :
+- ✅ Aucune dépendance à un hébergement externe
+- ✅ Installation simple sur Windows/Linux
+- ✅ Export PDF/Excel pour partage hors ligne
+- ✅ Interface ergonomique et intuitive
+- ✅ Stockage local performant basé sur fichiers
+- ✅ Import de projets existants depuis Excel
+
+---
+
+## 🎯 Fonctionnalités principales
+
+### Gestion de projets
+- Créer/éditer/supprimer des projets
+- 5 statuts (non commencé, en cours, en pause, terminé, archivé)
+- 4 niveaux de priorité (basse, moyenne, haute, urgente)
+- Suivi automatique de la progression
+- Code couleur personnalisable
+
+### Gestion des tâches
+- Organisation hiérarchique (tâches/sous-tâches)
+- 5 statuts (à faire, en cours, en revue, terminé, bloqué)
+- Affectation de ressources
+- Temps estimé vs temps réel
+- Tags personnalisables
+- Commentaires et pièces jointes
+- Dépendances entre tâches
+
+### Visualisations
+- **Tableau de bord** : Vue d'ensemble avec statistiques et activité récente
+- **Vue liste** : Organisation hiérarchique des tâches
+- **Vue Kanban** : Organisation par statut avec glisser-déposer
+- **Diagramme de Gantt** : Timeline avec jalons et dépendances
+- **Vue ressources** : Charge de travail et allocation
+
+### Jalons
+- Définition de dates cibles
+- 3 statuts (en attente, atteint, manqué)
+- Affichage dans le diagramme de Gantt
+- Alertes pour jalons à venir
 
 ### Import/Export
-- **Import**: Excel (.xlsx) with flexible column mapping
-- **Export PDF**: Complete report with all sections
-- **Export Excel**: Complete data for analysis
-- **Export PNG/JPG**: Gantt charts and visualizations
+- **Import** : Excel (.xlsx) et CSV avec mapping flexible des colonnes
+- **Export PDF** : Rapport complet avec toutes les sections
+- **Export Excel** : Données complètes pour analyse
+- **Export PNG/JPG** : Diagrammes de Gantt et visualisations
 
-### Resources
-- Team management (name, role, department, email)
-- Availability rate
-- Task allocation with percentage
-- Workload view
+### Ressources
+- Gestion d'équipe (nom, rôle, département, email)
+- Taux de disponibilité
+- Allocation de tâches avec pourcentage
+- Vue de charge de travail
 
 ---
 
-## 🏗️ Technical Architecture
+## 🏗️ Architecture technique
 
-### Technology Stack
+### Stack technologique
 
 **Frontend**
 - React 18 + TypeScript
 - Tailwind CSS + shadcn/ui
-- Zustand (state management)
-- Recharts (charts)
-- Lucide React (icons)
-- date-fns (date handling)
+- Zustand (gestion d'état)
+- Recharts (graphiques)
+- Lucide React (icônes)
+- date-fns (gestion des dates)
 
 **Backend**
-- Electron (desktop wrapper)
-- JSON file storage (local data persistence)
-- Node.js (integrated runtime)
+- Electron (wrapper desktop)
+- Stockage fichiers JSON (persistance locale des données)
+- Node.js (runtime intégré)
 
 **Build**
 - Electron Forge
 - Webpack
-- TypeScript compiler
+- Compilateur TypeScript
 
-### Data Storage Structure
+### Structure de stockage des données
 
-JSON file-based storage with 8 main entities:
-1. **projects**: Project information
-2. **tasks**: Tasks with hierarchy
-3. **milestones**: Project milestones
-4. **resources**: Team/resources
-5. **task_assignments**: Resource → task allocation
-6. **comments**: Comments on tasks/projects
-7. **attachments**: Attached files metadata
-8. **activity_log**: Action history
+Stockage basé sur fichiers JSON avec 8 entités principales :
+1. **projects** : Informations des projets
+2. **tasks** : Tâches avec hiérarchie
+3. **milestones** : Jalons de projet
+4. **resources** : Équipe/ressources
+5. **task_assignments** : Allocation ressource → tâche
+6. **comments** : Commentaires sur tâches/projets
+7. **attachments** : Métadonnées des fichiers joints
+8. **activity_log** : Historique des actions
 
-### IPC Communication
+### Communication IPC
 
-Secure architecture with:
-- **Main Process**: Manages file storage and system operations
-- **Renderer Process**: Isolated React interface
-- **Preload Script**: Secure API exposure via contextBridge
-- **IPC Channels**: Async communication via electron ipcMain/ipcRenderer
+Architecture sécurisée avec :
+- **Main Process** : Gère le stockage fichier et opérations système
+- **Renderer Process** : Interface React isolée
+- **Preload Script** : Exposition API sécurisée via contextBridge
+- **IPC Channels** : Communication asynchrone via electron ipcMain/ipcRenderer
 
 ---
 
 ## 🎨 Design
 
-### Linear-Inspired (Light Mode)
+### Inspiré de Linear (Mode clair)
 
-- Clean and modern interface
-- Generous spacing (8-point grid)
-- Inter typography
-- Smooth transitions (150ms)
-- No unnecessary frills
+- Interface épurée et moderne
+- Espacement généreux (grille 8 points)
+- Typographie Inter
+- Transitions fluides (150ms)
+- Pas de fioritures inutiles
 
-### Color Palette
+### Palette de couleurs
 
 ```css
-Primary:    #3B82F6 (Blue)
-Success:    #10B981 (Green)
-Warning:    #F59E0B (Orange)
-Error:      #EF4444 (Red)
-Background: #FFFFFF (White)
-Foreground: #171717 (Near Black)
-Border:     #E5E7EB (Light Gray)
+Primaire :   #3B82F6 (Bleu)
+Succès :     #10B981 (Vert)
+Attention :  #F59E0B (Orange)
+Erreur :     #EF4444 (Rouge)
+Fond :       #FFFFFF (Blanc)
+Avant-plan : #171717 (Quasi noir)
+Bordure :    #E5E7EB (Gris clair)
 ```
 
-### UI Components
+### Composants UI
 
-- Buttons: 3 variants × 3 sizes
-- Inputs: Blue focus ring, inline validation
-- Cards: Subtle shadow, hover lift
-- Badges: Colored status and priority
-- Sidebar: 240px, #FAFAFA background
-- Tooltips: Details on hover
-- Modals: Overlay + center, fade animation
+- Boutons : 3 variantes × 3 tailles
+- Inputs : Anneau bleu au focus, validation inline
+- Cartes : Ombre subtile, élévation au survol
+- Badges : Statuts et priorités colorés
+- Sidebar : 240px, fond #FAFAFA
+- Tooltips : Détails au survol
+- Modales : Overlay + centré, animation fade
 
 ---
 
 ## 📦 Distribution
 
-### Distribution Format
+### Format de distribution
 
-**File**: `ElegPM-{platform}-x64-1.0.0.zip` (Windows/Linux)
-- Size: ~100-105 MB (including Electron runtime)
-- Installation: Extract and run
-- Data: `%APPDATA%/ElegPM/` (Windows) or `~/.config/ElegPM/` (Linux)
+**Fichier** : `ElegPM-{plateforme}-x64-1.0.0.zip` (Windows/Linux)
+- Taille : ~100-105 MB (runtime Electron inclus)
+- Installation : Extraire et exécuter
+- Données : `%APPDATA%/ElegPM/` (Windows) ou `~/.config/ElegPM/` (Linux)
 
-### System Requirements
+### Configuration système requise
 
-- **OS**: Windows 10/11 or Linux (64-bit)
-- **RAM**: 2 GB minimum, 4 GB recommended
-- **Disk**: 300 MB free space
-- **Processor**: Dual-core 2 GHz minimum
+- **OS** : Windows 10/11 ou Linux (64-bit)
+- **RAM** : 2 GB minimum, 4 GB recommandé
+- **Disque** : 300 MB d'espace libre
+- **Processeur** : Dual-core 2 GHz minimum
 
 ---
 
-## 🚀 Quick Start
+## 🚀 Démarrage rapide
 
-### Installation for Development
+### Installation pour le développement
 
 ```bash
-# 1. Clone the repository
+# 1. Cloner le dépôt
 git clone https://github.com/ElegAlex/ElegPM.git
 cd ElegPM
 
-# 2. Install dependencies
+# 2. Installer les dépendances
 npm install
 
-# 3. Run in development mode
+# 3. Lancer en mode développement
 npm start
 ```
 
-### Production Build
+### Build de production
 
 ```bash
-# Build packages for distribution
+# Créer les packages pour distribution
 npm run make
 
-# Packages will be in: out/make/zip/{platform}/x64/
+# Les packages seront dans : out/make/zip/{plateforme}/x64/
 ```
 
 ---
 
-## 🔧 Customization
+## 🔧 Personnalisation
 
-### Easy Configuration
+### Configuration facile
 
-All customizable elements are centralized:
+Tous les éléments personnalisables sont centralisés :
 
-**Colors**: `tailwind.config.js`
+**Couleurs** : `tailwind.config.js`
 ```javascript
 colors: {
-  primary: "#3B82F6",  // Change main color
+  primary: "#3B82F6",  // Changer la couleur principale
   success: "#10B981",
   // ...
 }
 ```
 
-**Constants**: `src/renderer/lib/constants.ts`
+**Constantes** : `src/renderer/lib/constants.ts`
 ```typescript
 export const APP_NAME = "ElegPM";
 export const DEFAULT_PROJECT_COLOR = "#3B82F6";
@@ -251,67 +251,67 @@ export const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10 MB
 
 ---
 
-## 📝 Development Notes
+## 📝 Notes de développement
 
-### Best Practices
+### Bonnes pratiques
 
-1. **TypeScript Strict**: Enable strict mode
-2. **Atomic Commits**: One commit = one feature
-3. **Tests**: Add unit tests for business logic
-4. **Documentation**: Comment complex code
-5. **Logs**: Use console.log intelligently (dev only)
+1. **TypeScript Strict** : Activer le mode strict
+2. **Commits atomiques** : Un commit = une fonctionnalité
+3. **Tests** : Ajouter des tests unitaires pour la logique métier
+4. **Documentation** : Commenter le code complexe
+5. **Logs** : Utiliser console.log intelligemment (dev uniquement)
 
-### Security
+### Sécurité
 
-- ✅ Context isolation enabled
-- ✅ Node integration disabled
-- ✅ Preload script for API exposure
-- ✅ Input validation
-- ✅ Data sanitization
-- ✅ CSP headers
+- ✅ Context isolation activé
+- ✅ Node integration désactivé
+- ✅ Preload script pour exposition API
+- ✅ Validation des entrées
+- ✅ Sanitisation des données
+- ✅ Headers CSP
 
 ### Performance
 
-- Pagination for large lists
-- Virtual scrolling (react-window)
-- Debouncing for search
-- Lazy loading of images
-- React memoization (React.memo)
+- Pagination pour grandes listes
+- Défilement virtuel (react-window)
+- Debouncing pour recherche
+- Lazy loading des images
+- Mémoïsation React (React.memo)
 
 ---
 
-## 🤝 Contributing
+## 🤝 Contribuer
 
-Contributions are welcome! Please feel free to submit a Pull Request.
+Les contributions sont les bienvenues ! N'hésitez pas à soumettre une Pull Request.
 
 ---
 
-## 📄 License
+## 📄 Licence
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+Ce projet est sous licence MIT - voir le fichier [LICENSE](LICENSE) pour plus de détails.
 
 Copyright (c) 2025 Alexandre BERGE
 
 ---
 
-## 👤 Author
+## 👤 Auteur
 
 **Alexandre BERGE**
-- Website: [Elegartech.fr](https://elegartech.fr)
-- GitHub: [@ElegAlex](https://github.com/ElegAlex)
-- Blog: [Communs Numériques](https://communs-numeriques.fr)
+- Site web : [Elegartech.fr](https://elegartech.fr)
+- GitHub : [@ElegAlex](https://github.com/ElegAlex)
+- Blog : [Communs Numériques](https://communs-numeriques.fr)
 
 ---
 
-## 🙏 Acknowledgments
+## 🙏 Remerciements
 
-Built with modern web technologies and inspired by Linear's clean design philosophy.
-
----
-
-**Version**: 1.0.0
-**Last Updated**: November 2025
+Construit avec des technologies web modernes et inspiré par la philosophie de design épurée de Linear.
 
 ---
 
-Made with ❤️ by Alexandre BERGE
+**Version** : 1.0.0
+**Dernière mise à jour** : Novembre 2025
+
+---
+
+Fait avec ❤️ par Alexandre BERGE
