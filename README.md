@@ -2,12 +2,36 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 [![Platform](https://img.shields.io/badge/Platform-Windows%20%7C%20Linux-lightgrey.svg)]()
-[![Version](https://img.shields.io/badge/Version-1.0.0-green.svg)]()
+[![GitHub release](https://img.shields.io/github/v/release/ElegAlex/ElegPM)](https://github.com/ElegAlex/ElegPM/releases/latest)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.4-blue.svg)]()
 [![React](https://img.shields.io/badge/React-18.3-61dafb.svg)]()
 [![Electron](https://img.shields.io/badge/Electron-30.0-47848f.svg)]()
 
 > Modern desktop project management application inspired by Linear, with JSON file storage and React/TypeScript interface. Deployable as a standalone executable for local use without network dependencies.
+
+## 📦 Download
+
+**Ready to use! Download the latest version for your platform:**
+
+<div align="center">
+
+### [⬇️ Download for Linux (101 MB)](https://github.com/ElegAlex/ElegPM/releases/download/v1.0.0/ElegPM-linux-x64-1.0.0.zip)
+
+### [⬇️ Download for Windows (105 MB)](https://github.com/ElegAlex/ElegPM/releases/download/v1.0.0/ElegPM-win32-x64-1.0.0.zip)
+
+**or view all releases →** [GitHub Releases](https://github.com/ElegAlex/ElegPM/releases)
+
+</div>
+
+### Quick Start
+
+1. **Download** the .zip file for your OS
+2. **Extract** the archive
+3. **Run** the executable:
+   - Linux: `./elegpm`
+   - Windows: `elegpm.exe`
+
+No installation required! Just extract and run.
 
 ---
 
