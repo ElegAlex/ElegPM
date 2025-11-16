@@ -1,0 +1,7 @@
+Projet,Titre,Description,Heures estimées,Date début,Date fin,Statut,Priorité,Assigné à,Tags
+Mon Projet,Concevoir l'architecture,Définir l'architecture technique du système,40,01/12/2024,15/12/2024,À faire,Haute,Jean Dupont,"architecture,conception"
+Mon Projet,Développer le backend,Implémenter les API REST,80,16/12/2024,20/01/2025,À faire,Urgente,Marie Martin,"backend,api"
+Mon Projet,Créer l'interface utilisateur,Développer les composants React,60,21/01/2025,15/02/2025,À faire,Moyenne,Pierre Durand,"frontend,ui"
+Mon Projet,Rédiger la documentation,Documenter l'API et le code,20,16/02/2025,28/02/2025,À faire,Basse,Jean Dupont,"documentation"
+Mon Projet,Tests unitaires,Écrire et exécuter les tests unitaires,30,01/03/2025,15/03/2025,À faire,Haute,Marie Martin,"tests,qualité"
+Mon Projet,Déploiement,Déployer l'application en production,15,16/03/2025,20/03/2025,À faire,Urgente,Pierre Durand,"déploiement,ops"

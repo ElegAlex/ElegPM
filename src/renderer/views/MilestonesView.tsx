@@ -1,11 +1,10 @@
 import React, { useEffect, useState } from 'react';
-import { Plus, Filter, Edit2, Trash2, Flag, Calendar, Download, Upload } from 'lucide-react';
+import { Plus, Filter, Edit2, Trash2, Flag, Calendar, Download } from 'lucide-react';
 import { useMilestonesStore } from '../stores/milestonesStore';
 import { useProjectsStore } from '../stores/projectsStore';
 import { MilestoneForm } from '../components/MilestoneForm';
 import type { Milestone } from '../types/milestone';
 import { exportMilestonesToExcel } from '../lib/excelExport';
-import { importMilestonesFromExcel } from '../lib/excelImport';
 
 const statusConfig = {
   pending: { label: 'En attente', color: 'bg-yellow-100 text-yellow-700 border-yellow-300' },
@@ -20,7 +19,6 @@ export const MilestonesView: React.FC = () => {
   const [showForm, setShowForm] = useState(false);
   const [editingMilestone, setEditingMilestone] = useState<Milestone | null>(null);
   const [isExporting, setIsExporting] = useState(false);
-  const [isImporting, setIsImporting] = useState(false);
 
   useEffect(() => {
     fetchProjects();
@@ -82,56 +80,6 @@ export const MilestonesView: React.FC = () => {
     }
   };
 
-  const handleImport = async () => {
-    try {
-      setIsImporting(true);
-
-      // Ouvrir le dialogue de sélection de fichier
-      const result = await window.api.files.openExcelDialog();
-
-      if (result.canceled || !result.fileBuffer) {
-        setIsImporting(false);
-        return;
-      }
-
-      // Convertir le buffer en File object
-      const uint8Array = new Uint8Array(result.fileBuffer);
-      const blob = new Blob([uint8Array], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
-      const file = new File([blob], result.fileName || 'import.xlsx');
-
-      // Créer une map nom projet -> ID projet
-      const projectIdMap = new Map(projects.map(p => [p.name, p.id]));
-
-      // Importer les données
-      const importResult = await importMilestonesFromExcel(file, projectIdMap);
-
-      if (importResult.errors.length > 0) {
-        const errorMessages = importResult.errors.map(e => `Ligne ${e.row}, ${e.field}: ${e.message}`).join('\n');
-        alert(`Import terminé avec des erreurs:\n\n${errorMessages}\n\n${importResult.success.length} jalons importés avec succès.`);
-      }
-
-      // Créer les jalons importés
-      let successCount = 0;
-      for (const milestoneInput of importResult.success) {
-        try {
-          await createMilestone(milestoneInput);
-          successCount++;
-        } catch (error) {
-          console.error('Error creating milestone:', error);
-        }
-      }
-
-      if (successCount > 0) {
-        await fetchMilestones();
-        alert(`${successCount} jalon(s) importé(s) avec succès !`);
-      }
-    } catch (error) {
-      console.error('Error importing milestones:', error);
-      alert('Erreur lors de l\'import des jalons');
-    } finally {
-      setIsImporting(false);
-    }
-  };
 
   return (
     <div className="h-full flex flex-col">
@@ -153,15 +101,6 @@ export const MilestonesView: React.FC = () => {
           </select>
         </div>
         <div className="flex items-center gap-2">
-          <button
-            onClick={handleImport}
-            disabled={isImporting || projects.length === 0}
-            className="flex items-center gap-2 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-            title="Importer depuis Excel"
-          >
-            <Upload className="w-5 h-5" />
-            {isImporting ? 'Import...' : 'Importer'}
-          </button>
           <button
             onClick={handleExport}
             disabled={isExporting || filteredMilestones.length === 0}

@@ -515,3 +515,223 @@ export const importResourcesFromExcel = async (file: File): Promise<ImportResult
     throw new Error(`Erreur lors de la lecture du fichier: ${error instanceof Error ? error.message : 'Erreur inconnue'}`);
   }
 };
+
+/**
+ * Parse un fichier CSV et retourne les données
+ */
+const parseCSV = (text: string): any[] => {
+  const lines = text.split('\n').filter(line => line.trim().length > 0);
+  if (lines.length === 0) return [];
+
+  const headers = lines[0].split(/[,;]/).map(h => h.trim().replace(/^"|"$/g, ''));
+  const data: any[] = [];
+
+  for (let i = 1; i < lines.length; i++) {
+    const values = lines[i].split(/[,;]/).map(v => v.trim().replace(/^"|"$/g, ''));
+    const row: any = {};
+
+    headers.forEach((header, index) => {
+      row[header] = values[index] || '';
+    });
+
+    data.push(row);
+  }
+
+  return data;
+};
+
+/**
+ * Importe des tâches depuis un fichier CSV
+ */
+export const importTasksFromCSV = async (
+  file: File,
+  projectIdMap: Map<string, string>
+): Promise<ImportResult<TaskInput>> => {
+  const errors: ImportError[] = [];
+  const success: TaskInput[] = [];
+
+  try {
+    const text = await file.text();
+    const data = parseCSV(text);
+
+    data.forEach((row: any, index: number) => {
+      const rowNumber = index + 2;
+
+      // Validation projet (requis)
+      let projectId: string | undefined;
+      if (row['Projet']) {
+        projectId = projectIdMap.get(row['Projet'].trim());
+        if (!projectId) {
+          errors.push({
+            row: rowNumber,
+            field: 'Projet',
+            message: `Projet "${row['Projet']}" introuvable`,
+            value: row['Projet'],
+          });
+          return;
+        }
+      } else {
+        errors.push({
+          row: rowNumber,
+          field: 'Projet',
+          message: 'Le projet est requis',
+          value: row['Projet'],
+        });
+        return;
+      }
+
+      // Validation titre (requis) - support des colonnes "Titre" ou "Nom"
+      const title = row['Titre'] || row['Nom'];
+      if (!title || typeof title !== 'string' || title.trim().length === 0) {
+        errors.push({
+          row: rowNumber,
+          field: 'Titre',
+          message: 'Le titre est requis',
+          value: title,
+        });
+        return;
+      }
+
+      const task: TaskInput = {
+        projectId,
+        title: title.trim(),
+        description: row['Description']?.trim() || undefined,
+        status: validateTaskStatus(row['Statut']),
+        priority: validatePriority(row['Priorité']),
+        assignee: row['Assigné à']?.trim() || undefined,
+        estimatedHours: row['Heures estimées'] ? Number(row['Heures estimées']) : undefined,
+        actualHours: row['Heures réelles'] ? Number(row['Heures réelles']) : undefined,
+        startDate: parseDate(row['Date début'] || row['Date de début']),
+        endDate: parseDate(row['Date fin'] || row['Date de fin']),
+        tags: parseTags(row['Tags']),
+      };
+
+      // Validation des heures
+      if (task.estimatedHours !== undefined && (isNaN(task.estimatedHours) || task.estimatedHours < 0)) {
+        errors.push({
+          row: rowNumber,
+          field: 'Heures estimées',
+          message: 'Valeur invalide pour les heures estimées',
+          value: row['Heures estimées'],
+        });
+        task.estimatedHours = undefined;
+      }
+
+      if (task.actualHours !== undefined && (isNaN(task.actualHours) || task.actualHours < 0)) {
+        errors.push({
+          row: rowNumber,
+          field: 'Heures réelles',
+          message: 'Valeur invalide pour les heures réelles',
+          value: row['Heures réelles'],
+        });
+        task.actualHours = undefined;
+      }
+
+      success.push(task);
+    });
+
+    return {
+      success,
+      errors,
+      totalRows: data.length,
+    };
+  } catch (error) {
+    throw new Error(`Erreur lors de la lecture du fichier CSV: ${error instanceof Error ? error.message : 'Erreur inconnue'}`);
+  }
+};
+
+/**
+ * Importe des jalons depuis un fichier CSV
+ */
+export const importMilestonesFromCSV = async (
+  file: File,
+  projectIdMap: Map<string, string>
+): Promise<ImportResult<MilestoneInput>> => {
+  const errors: ImportError[] = [];
+  const success: MilestoneInput[] = [];
+
+  try {
+    const text = await file.text();
+    const data = parseCSV(text);
+
+    data.forEach((row: any, index: number) => {
+      const rowNumber = index + 2;
+
+      // Validation projet (requis)
+      let projectId: string | undefined;
+      if (row['Projet']) {
+        projectId = projectIdMap.get(row['Projet'].trim());
+        if (!projectId) {
+          errors.push({
+            row: rowNumber,
+            field: 'Projet',
+            message: `Projet "${row['Projet']}" introuvable`,
+            value: row['Projet'],
+          });
+          return;
+        }
+      } else {
+        errors.push({
+          row: rowNumber,
+          field: 'Projet',
+          message: 'Le projet est requis',
+          value: row['Projet'],
+        });
+        return;
+      }
+
+      // Validation nom (requis)
+      if (!row['Nom'] || typeof row['Nom'] !== 'string' || row['Nom'].trim().length === 0) {
+        errors.push({
+          row: rowNumber,
+          field: 'Nom',
+          message: 'Le nom est requis',
+          value: row['Nom'],
+        });
+        return;
+      }
+
+      // Validation date cible (requise)
+      const targetDate = parseDate(row['Date cible'] || row['Date de fin'] || row['Date fin']);
+      if (!targetDate) {
+        errors.push({
+          row: rowNumber,
+          field: 'Date cible',
+          message: 'La date cible est requise',
+          value: row['Date cible'],
+        });
+        return;
+      }
+
+      const milestone: MilestoneInput = {
+        projectId,
+        name: row['Nom'].trim(),
+        description: row['Description']?.trim() || undefined,
+        targetDate,
+        status: validateMilestoneStatus(row['Statut']),
+        color: row['Couleur']?.trim() || undefined,
+      };
+
+      // Validation de la couleur
+      if (milestone.color && !/^#[0-9A-F]{6}$/i.test(milestone.color)) {
+        errors.push({
+          row: rowNumber,
+          field: 'Couleur',
+          message: 'Format de couleur invalide (attendu: #RRGGBB)',
+          value: milestone.color,
+        });
+        milestone.color = undefined;
+      }
+
+      success.push(milestone);
+    });
+
+    return {
+      success,
+      errors,
+      totalRows: data.length,
+    };
+  } catch (error) {
+    throw new Error(`Erreur lors de la lecture du fichier CSV: ${error instanceof Error ? error.message : 'Erreur inconnue'}`);
+  }
+};

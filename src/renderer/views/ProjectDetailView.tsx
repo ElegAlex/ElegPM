@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { ArrowLeft, Edit2, Trash2, Plus, Calendar, Users, Flag, ListTodo, Activity, GanttChart, Tag, X, Clock, MessageSquare, TrendingUp, Send, Network, ChevronDown, ChevronRight } from 'lucide-react';
+import { ArrowLeft, Edit2, Trash2, Plus, Calendar, Users, Flag, ListTodo, Activity, GanttChart, Tag, X, Clock, MessageSquare, TrendingUp, Send, Network, ChevronDown, ChevronRight, Upload, LayoutGrid, List } from 'lucide-react';
 import { useProjectsStore } from '../stores/projectsStore';
 import { useTasksStore } from '../stores/tasksStore';
 import { useMilestonesStore } from '../stores/milestonesStore';
@@ -10,6 +10,8 @@ import { TaskForm } from '../components/TaskForm';
 import { MilestoneForm } from '../components/MilestoneForm';
 import { ProjectGanttView } from '../components/ProjectGanttView';
 import { TaskDetailModal } from '../components/TaskDetailModal';
+import { TasksImportDialog } from '../components/TasksImportDialog';
+import { MilestonesImportDialog } from '../components/MilestonesImportDialog';
 import type { Project } from '../types/project';
 import type { Task } from '../types/task';
 
@@ -60,6 +62,8 @@ export const ProjectDetailView: React.FC<ProjectDetailViewProps> = ({ projectId,
   const [showProjectForm, setShowProjectForm] = useState(false);
   const [showTaskForm, setShowTaskForm] = useState(false);
   const [showMilestoneForm, setShowMilestoneForm] = useState(false);
+  const [showTasksImport, setShowTasksImport] = useState(false);
+  const [showMilestonesImport, setShowMilestonesImport] = useState(false);
   const [editingTask, setEditingTask] = useState(null);
   const [editingMilestone, setEditingMilestone] = useState(null);
   const [selectedTaskForDetail, setSelectedTaskForDetail] = useState<Task | null>(null);
@@ -72,6 +76,8 @@ export const ProjectDetailView: React.FC<ProjectDetailViewProps> = ({ projectId,
   const [expandedWbsNodes, setExpandedWbsNodes] = useState<Set<string>>(new Set());
   const [wbsViewMode, setWbsViewMode] = useState<'deliverables' | 'phases'>('deliverables');
   const [selectedWbsElement, setSelectedWbsElement] = useState<string | null>(null);
+  const [taskViewMode, setTaskViewMode] = useState<'table' | 'kanban'>('table');
+  const [draggedTask, setDraggedTask] = useState<Task | null>(null);
 
   const project = projects.find(p => p.id === projectId);
 
@@ -347,6 +353,29 @@ export const ProjectDetailView: React.FC<ProjectDetailViewProps> = ({ projectId,
       console.error('Error adding comment:', error);
     }
   };
+
+  // Kanban drag & drop handlers
+  const handleDragStart = (task: Task) => {
+    setDraggedTask(task);
+  };
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+  };
+
+  const handleDrop = async (newStatus: any) => {
+    if (draggedTask && draggedTask.status !== newStatus) {
+      try {
+        await updateTask(draggedTask.id, { status: newStatus });
+      } catch (error) {
+        console.error('Error updating task status:', error);
+      }
+    }
+    setDraggedTask(null);
+  };
+
+  const tasksByStatus = (status: any) =>
+    filteredProjectTasks.filter(task => task.status === status);
 
   // Calculate project statistics
   const projectStats = useMemo(() => {
@@ -885,17 +914,55 @@ export const ProjectDetailView: React.FC<ProjectDetailViewProps> = ({ projectId,
         {activeTab === 'tasks' && (
           <div>
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-lg font-semibold text-gray-900">Tâches du projet</h2>
-              <button
-                onClick={() => {
-                  setEditingTask(null);
-                  setShowTaskForm(true);
-                }}
-                className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-              >
-                <Plus className="w-4 h-4" />
-                Nouvelle tâche
-              </button>
+              <div className="flex items-center gap-3">
+                <h2 className="text-lg font-semibold text-gray-900">Tâches du projet</h2>
+                {/* View Mode Toggle */}
+                <div className="flex items-center gap-1 bg-gray-100 rounded-lg p-1">
+                  <button
+                    onClick={() => setTaskViewMode('table')}
+                    className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded transition-colors ${
+                      taskViewMode === 'table'
+                        ? 'bg-white text-gray-900 shadow-sm'
+                        : 'text-gray-600 hover:text-gray-900'
+                    }`}
+                    title="Vue tableau"
+                  >
+                    <List className="w-3.5 h-3.5" />
+                    Tableau
+                  </button>
+                  <button
+                    onClick={() => setTaskViewMode('kanban')}
+                    className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded transition-colors ${
+                      taskViewMode === 'kanban'
+                        ? 'bg-white text-gray-900 shadow-sm'
+                        : 'text-gray-600 hover:text-gray-900'
+                    }`}
+                    title="Vue Kanban"
+                  >
+                    <LayoutGrid className="w-3.5 h-3.5" />
+                    Kanban
+                  </button>
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => setShowTasksImport(true)}
+                  className="flex items-center gap-2 px-4 py-2 bg-white text-blue-600 border border-blue-600 rounded-lg hover:bg-blue-50 transition-colors"
+                >
+                  <Upload className="w-4 h-4" />
+                  Importer
+                </button>
+                <button
+                  onClick={() => {
+                    setEditingTask(null);
+                    setShowTaskForm(true);
+                  }}
+                  className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                >
+                  <Plus className="w-4 h-4" />
+                  Nouvelle tâche
+                </button>
+              </div>
             </div>
 
             {/* Tag Filter Section */}
@@ -972,9 +1039,149 @@ export const ProjectDetailView: React.FC<ProjectDetailViewProps> = ({ projectId,
                   Réinitialiser les filtres
                 </button>
               </div>
-            ) : (
+            ) : taskViewMode === 'table' ? (
               <div className="space-y-3">
                 {hierarchicalTasks.map(task => renderTaskWithChildren(task, 0))}
+              </div>
+            ) : (
+              /* Kanban View */
+              <div className="flex-1 grid grid-cols-5 gap-4 overflow-x-auto">
+                {(Object.keys(taskStatusConfig) as Array<keyof typeof taskStatusConfig>).map(status => (
+                  <div
+                    key={status}
+                    className="flex flex-col min-w-[250px]"
+                    onDragOver={handleDragOver}
+                    onDrop={() => handleDrop(status)}
+                  >
+                    {/* Column Header */}
+                    <div className={`px-4 py-3 rounded-t-lg border-2 ${taskStatusConfig[status].color.replace('text-', 'border-')}`}>
+                      <div className="flex items-center justify-between">
+                        <span className="font-semibold text-gray-700">
+                          {taskStatusConfig[status].label}
+                        </span>
+                        <span className="text-sm font-medium text-gray-600 bg-white px-2 py-0.5 rounded-full">
+                          {tasksByStatus(status).length}
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Tasks Column */}
+                    <div className="flex-1 bg-gray-50 rounded-b-lg border-2 border-t-0 border-gray-200 p-3 space-y-3 overflow-y-auto min-h-[400px]">
+                      {tasksByStatus(status).map(task => {
+                        const taskTags = parseTaskTags(task);
+                        const priorityColors = {
+                          low: 'text-gray-600',
+                          medium: 'text-blue-600',
+                          high: 'text-orange-600',
+                          urgent: 'text-red-600',
+                        };
+
+                        return (
+                          <div
+                            key={task.id}
+                            draggable
+                            onDragStart={() => handleDragStart(task)}
+                            className="bg-white rounded-lg border border-gray-200 p-3 cursor-move hover:shadow-md transition-shadow group"
+                          >
+                            {/* Task Header */}
+                            <div className="flex items-start justify-between gap-2 mb-2">
+                              <h4 className="font-medium text-gray-900 text-sm line-clamp-2 flex-1">
+                                {task.title}
+                              </h4>
+                              <div className="flex items-center gap-1">
+                                <span className={`text-xs font-bold ${priorityColors[task.priority]}`}>
+                                  {task.priority === 'urgent' && '!!!'}
+                                  {task.priority === 'high' && '!!'}
+                                  {task.priority === 'medium' && '!'}
+                                </span>
+                                <div className="opacity-0 group-hover:opacity-100 transition-opacity flex gap-0.5">
+                                  <button
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      handleEditTask(task);
+                                    }}
+                                    className="p-1 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded"
+                                    title="Modifier"
+                                  >
+                                    <Edit2 className="w-3 h-3" />
+                                  </button>
+                                  <button
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      handleDeleteTask(task.id);
+                                    }}
+                                    className="p-1 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded"
+                                    title="Supprimer"
+                                  >
+                                    <Trash2 className="w-3 h-3" />
+                                  </button>
+                                </div>
+                              </div>
+                            </div>
+
+                            {/* Task Description */}
+                            {task.description && (
+                              <p className="text-xs text-gray-600 mb-2 line-clamp-2">
+                                {task.description}
+                              </p>
+                            )}
+
+                            {/* Task Meta */}
+                            <div className="space-y-1.5">
+                              {/* Resources */}
+                              {getResourceNames(task.id) && (
+                                <div className="flex items-center gap-1.5 text-xs text-gray-600">
+                                  <Users className="w-3 h-3" />
+                                  <span className="truncate">{getResourceNames(task.id)}</span>
+                                </div>
+                              )}
+
+                              {/* Time Estimate */}
+                              {task.estimatedHours && (
+                                <div className="flex items-center gap-1.5 text-xs text-gray-600">
+                                  <Clock className="w-3 h-3" />
+                                  <span>{task.estimatedHours}h</span>
+                                  {task.actualHours && (
+                                    <span className="text-gray-400">/ {task.actualHours}h</span>
+                                  )}
+                                </div>
+                              )}
+
+                              {/* Due Date */}
+                              {task.endDate && (
+                                <div className="flex items-center gap-1.5 text-xs text-gray-500">
+                                  <Calendar className="w-3 h-3" />
+                                  <span>{new Date(task.endDate).toLocaleDateString('fr-FR')}</span>
+                                </div>
+                              )}
+
+                              {/* Tags */}
+                              {taskTags.length > 0 && (
+                                <div className="flex flex-wrap gap-1 mt-2">
+                                  {taskTags.map((tag, idx) => (
+                                    <span
+                                      key={idx}
+                                      className="px-1.5 py-0.5 bg-blue-100 text-blue-700 text-xs rounded"
+                                    >
+                                      {tag}
+                                    </span>
+                                  ))}
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        );
+                      })}
+
+                      {/* Empty Column State */}
+                      {tasksByStatus(status).length === 0 && (
+                        <div className="text-center py-8 text-gray-400 text-sm">
+                          Aucune tâche
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                ))}
               </div>
             )}
           </div>
@@ -985,16 +1192,25 @@ export const ProjectDetailView: React.FC<ProjectDetailViewProps> = ({ projectId,
           <div>
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-lg font-semibold text-gray-900">Jalons du projet</h2>
-              <button
-                onClick={() => {
-                  setEditingMilestone(null);
-                  setShowMilestoneForm(true);
-                }}
-                className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-              >
-                <Plus className="w-4 h-4" />
-                Nouveau jalon
-              </button>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => setShowMilestonesImport(true)}
+                  className="flex items-center gap-2 px-4 py-2 bg-white text-blue-600 border border-blue-600 rounded-lg hover:bg-blue-50 transition-colors"
+                >
+                  <Upload className="w-4 h-4" />
+                  Importer
+                </button>
+                <button
+                  onClick={() => {
+                    setEditingMilestone(null);
+                    setShowMilestoneForm(true);
+                  }}
+                  className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                >
+                  <Plus className="w-4 h-4" />
+                  Nouveau jalon
+                </button>
+              </div>
             </div>
 
             {projectMilestones.length === 0 ? (
@@ -1701,6 +1917,21 @@ export const ProjectDetailView: React.FC<ProjectDetailViewProps> = ({ projectId,
             setShowMilestoneForm(false);
             setEditingMilestone(null);
           }}
+        />
+      )}
+
+      {/* Import Dialogs */}
+      {showTasksImport && (
+        <TasksImportDialog
+          projectId={projectId}
+          onClose={() => setShowTasksImport(false)}
+        />
+      )}
+
+      {showMilestonesImport && (
+        <MilestonesImportDialog
+          projectId={projectId}
+          onClose={() => setShowMilestonesImport(false)}
         />
       )}
 

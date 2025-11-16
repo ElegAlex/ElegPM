@@ -1,0 +1,7 @@
+Projet,Nom,Description,Date cible,Statut,Couleur
+Mon Projet,Livraison version Alpha,"Première version fonctionnelle du système avec fonctionnalités de base. Critères: API fonctionnelle, interface utilisateur responsive, tests unitaires passés.",15/01/2025,En attente,#3B82F6
+Mon Projet,Livraison version Beta,"Version de test avec fonctionnalités complètes incluant tous les modules. Critères: Toutes les fonctionnalités implémentées, tests d'intégration validés, documentation API complète.",15/02/2025,En attente,#F59E0B
+Mon Projet,Validation client,"Présentation et validation de la solution par le client. Critères: Démonstration réussie, feedback client collecté, ajustements identifiés.",28/02/2025,En attente,#8B5CF6
+Mon Projet,Mise en production,"Déploiement final en production avec tous les environnements configurés. Critères: Déploiement réussi, monitoring actif, plan de rollback testé.",20/03/2025,En attente,#10B981
+Mon Projet,Formation utilisateurs,"Formation complète des utilisateurs finaux et support technique. Critères: Sessions de formation réalisées, documentation utilisateur livrée, support actif.",30/03/2025,En attente,#6366F1
+Mon Projet,Clôture projet,"Bilan final du projet et transfert de connaissance. Critères: Rétrospective effectuée, documentation archivée, retour d'expérience capitalisé.",10/04/2025,En attente,#EF4444

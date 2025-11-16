@@ -1,11 +1,10 @@
 import React, { useEffect, useState, useMemo } from 'react';
-import { Plus, Filter, Clock, User, Edit2, Trash2, Download, Upload, Tag, X } from 'lucide-react';
+import { Plus, Filter, Clock, User, Edit2, Trash2, Download, Tag, X } from 'lucide-react';
 import { useTasksStore } from '../stores/tasksStore';
 import { useProjectsStore } from '../stores/projectsStore';
 import { TaskForm } from '../components/TaskForm';
 import type { Task, TaskStatus } from '../types/task';
 import { exportTasksToExcel } from '../lib/excelExport';
-import { importTasksFromExcel } from '../lib/excelImport';
 
 const statusConfig = {
   todo: { label: 'À faire', color: 'bg-gray-100 border-gray-300' },
@@ -31,7 +30,6 @@ export const TasksView: React.FC = () => {
   const [editingTask, setEditingTask] = useState<Task | null>(null);
   const [draggedTask, setDraggedTask] = useState<Task | null>(null);
   const [isExporting, setIsExporting] = useState(false);
-  const [isImporting, setIsImporting] = useState(false);
 
   useEffect(() => {
     fetchProjects();
@@ -146,56 +144,6 @@ export const TasksView: React.FC = () => {
     }
   };
 
-  const handleImport = async () => {
-    try {
-      setIsImporting(true);
-
-      // Ouvrir le dialogue de sélection de fichier
-      const result = await window.api.files.openExcelDialog();
-
-      if (result.canceled || !result.fileBuffer) {
-        setIsImporting(false);
-        return;
-      }
-
-      // Convertir le buffer en File object
-      const uint8Array = new Uint8Array(result.fileBuffer);
-      const blob = new Blob([uint8Array], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
-      const file = new File([blob], result.fileName || 'import.xlsx');
-
-      // Créer une map nom projet -> ID projet
-      const projectIdMap = new Map(projects.map(p => [p.name, p.id]));
-
-      // Importer les données
-      const importResult = await importTasksFromExcel(file, projectIdMap);
-
-      if (importResult.errors.length > 0) {
-        const errorMessages = importResult.errors.map(e => `Ligne ${e.row}, ${e.field}: ${e.message}`).join('\n');
-        alert(`Import terminé avec des erreurs:\n\n${errorMessages}\n\n${importResult.success.length} tâches importées avec succès.`);
-      }
-
-      // Créer les tâches importées
-      let successCount = 0;
-      for (const taskInput of importResult.success) {
-        try {
-          await createTask(taskInput);
-          successCount++;
-        } catch (error) {
-          console.error('Error creating task:', error);
-        }
-      }
-
-      if (successCount > 0) {
-        await fetchTasks();
-        alert(`${successCount} tâche(s) importée(s) avec succès !`);
-      }
-    } catch (error) {
-      console.error('Error importing tasks:', error);
-      alert('Erreur lors de l\'import des tâches');
-    } finally {
-      setIsImporting(false);
-    }
-  };
 
   return (
     <div className="h-full flex flex-col">
@@ -217,15 +165,6 @@ export const TasksView: React.FC = () => {
           </select>
         </div>
         <div className="flex items-center gap-2">
-          <button
-            onClick={handleImport}
-            disabled={isImporting || projects.length === 0}
-            className="flex items-center gap-2 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-            title="Importer depuis Excel"
-          >
-            <Upload className="w-5 h-5" />
-            {isImporting ? 'Import...' : 'Importer'}
-          </button>
           <button
             onClick={handleExport}
             disabled={isExporting || filteredTasks.length === 0}
