@@ -283,9 +283,8 @@ Mais l'architecture actuelle est **100% fonctionnelle** en standalone !
 
 ### Contact
 
-Alexandre Légaré  
-Responsable des Systèmes d'Information  
-CPAM 75 (bientôt CPAM 92)
+Alexandre BERGE
+contact@elegartech.fr
 
 ---
 

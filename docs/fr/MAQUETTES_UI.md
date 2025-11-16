@@ -382,7 +382,7 @@ L'application suit un design inspiré de Linear avec un mode clair épuré et mo
 │  │                                                                         ││
 │  │  Responsable                                                            ││
 │  │  ┌──────────────────────────────────────────────────────────────────┐  ││
-│  │  │ Alexandre Légaré                                             ▾  │  ││
+│  │  │ Alexandre BERGE                                              ▾  │  ││
 │  │  └──────────────────────────────────────────────────────────────────┘  ││
 │  │                                                                         ││
 │  │                                                                         ││
