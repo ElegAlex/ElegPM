@@ -61,18 +61,18 @@ export const TaskDetailModal: React.FC<TaskDetailModalProps> = ({
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-lg max-w-4xl w-full max-h-[90vh] overflow-hidden flex flex-col">
+      <div className="bg-white dark:bg-gray-800 rounded-lg max-w-4xl w-full max-h-[90vh] overflow-hidden flex flex-col">
         {/* Header */}
-        <div className="flex items-start justify-between p-6 border-b border-gray-200">
+        <div className="flex items-start justify-between p-6 border-b border-gray-200 dark:border-gray-700">
           <div className="flex-1">
             <div className="flex items-center gap-2 mb-2">
               <div
                 className="w-3 h-3 rounded-full"
                 style={{ backgroundColor: projectColor }}
               />
-              <span className="text-sm text-gray-600">{projectName}</span>
+              <span className="text-sm text-gray-600 dark:text-gray-400">{projectName}</span>
             </div>
-            <h2 className="text-2xl font-bold text-gray-900 mb-3">{task.title}</h2>
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-3">{task.title}</h2>
             <div className="flex items-center gap-3 flex-wrap">
               <span className={`px-3 py-1 rounded-full text-sm font-medium ${statusConfig[task.status].color}`}>
                 {statusConfig[task.status].label}
@@ -84,7 +84,7 @@ export const TaskDetailModal: React.FC<TaskDetailModalProps> = ({
           </div>
           <button
             onClick={onClose}
-            className="p-2 text-gray-400 hover:text-gray-600 rounded transition-colors"
+            className="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 rounded transition-colors"
           >
             <X className="w-6 h-6" />
           </button>
@@ -95,8 +95,8 @@ export const TaskDetailModal: React.FC<TaskDetailModalProps> = ({
           {/* Description */}
           {task.description && (
             <div>
-              <h3 className="text-sm font-semibold text-gray-700 mb-2">Description</h3>
-              <p className="text-gray-700 whitespace-pre-wrap">{task.description}</p>
+              <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Description</h3>
+              <p className="text-gray-700 dark:text-gray-300 whitespace-pre-wrap">{task.description}</p>
             </div>
           )}
 
@@ -106,8 +106,8 @@ export const TaskDetailModal: React.FC<TaskDetailModalProps> = ({
             {task.assignee && (
               <div className="flex items-center gap-2 text-sm">
                 <User className="w-4 h-4 text-gray-400" />
-                <span className="text-gray-600">Assigné à:</span>
-                <span className="font-medium text-gray-900">{task.assignee}</span>
+                <span className="text-gray-600 dark:text-gray-400">Assigné à:</span>
+                <span className="font-medium text-gray-900 dark:text-white">{task.assignee}</span>
               </div>
             )}
 
@@ -115,8 +115,8 @@ export const TaskDetailModal: React.FC<TaskDetailModalProps> = ({
             {task.estimatedHours && (
               <div className="flex items-center gap-2 text-sm">
                 <Clock className="w-4 h-4 text-gray-400" />
-                <span className="text-gray-600">Temps estimé:</span>
-                <span className="font-medium text-gray-900">{task.estimatedHours}h</span>
+                <span className="text-gray-600 dark:text-gray-400">Temps estimé:</span>
+                <span className="font-medium text-gray-900 dark:text-white">{task.estimatedHours}h</span>
               </div>
             )}
 
@@ -124,8 +124,8 @@ export const TaskDetailModal: React.FC<TaskDetailModalProps> = ({
             {task.actualHours && (
               <div className="flex items-center gap-2 text-sm">
                 <Clock className="w-4 h-4 text-gray-400" />
-                <span className="text-gray-600">Temps réel:</span>
-                <span className="font-medium text-gray-900">{task.actualHours}h</span>
+                <span className="text-gray-600 dark:text-gray-400">Temps réel:</span>
+                <span className="font-medium text-gray-900 dark:text-white">{task.actualHours}h</span>
               </div>
             )}
 
@@ -133,8 +133,8 @@ export const TaskDetailModal: React.FC<TaskDetailModalProps> = ({
             {task.startDate && (
               <div className="flex items-center gap-2 text-sm">
                 <Calendar className="w-4 h-4 text-gray-400" />
-                <span className="text-gray-600">Début:</span>
-                <span className="font-medium text-gray-900">
+                <span className="text-gray-600 dark:text-gray-400">Début:</span>
+                <span className="font-medium text-gray-900 dark:text-white">
                   {new Date(task.startDate).toLocaleDateString('fr-FR')}
                 </span>
               </div>
@@ -144,8 +144,8 @@ export const TaskDetailModal: React.FC<TaskDetailModalProps> = ({
             {task.endDate && (
               <div className="flex items-center gap-2 text-sm">
                 <Calendar className="w-4 h-4 text-gray-400" />
-                <span className="text-gray-600">Échéance:</span>
-                <span className="font-medium text-gray-900">
+                <span className="text-gray-600 dark:text-gray-400">Échéance:</span>
+                <span className="font-medium text-gray-900 dark:text-white">
                   {new Date(task.endDate).toLocaleDateString('fr-FR')}
                 </span>
               </div>
@@ -157,13 +157,13 @@ export const TaskDetailModal: React.FC<TaskDetailModalProps> = ({
             <div>
               <div className="flex items-center gap-2 mb-2">
                 <Tag className="w-4 h-4 text-gray-400" />
-                <span className="text-sm font-semibold text-gray-700">Tags</span>
+                <span className="text-sm font-semibold text-gray-700 dark:text-gray-300">Tags</span>
               </div>
               <div className="flex flex-wrap gap-2">
                 {taskTags.map((tag, idx) => (
                   <span
                     key={idx}
-                    className="px-2 py-1 bg-gray-100 text-gray-700 text-sm rounded"
+                    className="px-2 py-1 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 text-sm rounded"
                   >
                     {tag}
                   </span>
@@ -173,7 +173,7 @@ export const TaskDetailModal: React.FC<TaskDetailModalProps> = ({
           )}
 
           {/* Divider */}
-          <div className="border-t border-gray-200" />
+          <div className="border-t border-gray-200 dark:border-gray-700" />
 
           {/* Attachments */}
           <AttachmentsList
@@ -183,7 +183,7 @@ export const TaskDetailModal: React.FC<TaskDetailModalProps> = ({
           />
 
           {/* Divider */}
-          <div className="border-t border-gray-200" />
+          <div className="border-t border-gray-200 dark:border-gray-700" />
 
           {/* Comments */}
           <CommentsList

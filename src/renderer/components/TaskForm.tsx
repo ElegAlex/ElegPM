@@ -174,15 +174,15 @@ export const TaskForm: React.FC<TaskFormProps> = ({ task, projectId, parentTaskI
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-lg shadow-xl max-w-3xl w-full max-h-[90vh] overflow-y-auto">
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-3xl w-full max-h-[90vh] overflow-y-auto">
         {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b border-gray-200 sticky top-0 bg-white">
-          <h2 className="text-xl font-semibold text-gray-900">
+        <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700 sticky top-0 bg-white dark:bg-gray-800">
+          <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
             {task ? 'Modifier la tâche' : 'Nouvelle tâche'}
           </h2>
           <button
             onClick={onClose}
-            className="text-gray-400 hover:text-gray-600 transition-colors"
+            className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
           >
             <X className="w-6 h-6" />
           </button>
@@ -192,7 +192,7 @@ export const TaskForm: React.FC<TaskFormProps> = ({ task, projectId, parentTaskI
         <form onSubmit={handleSubmit} className="p-6 space-y-4">
           {/* Project Selection */}
           <div>
-            <label htmlFor="projectId" className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="projectId" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
               Projet <span className="text-red-500">*</span>
             </label>
             <select
@@ -201,7 +201,7 @@ export const TaskForm: React.FC<TaskFormProps> = ({ task, projectId, parentTaskI
               value={formData.projectId}
               onChange={handleChange}
               required
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
               <option value="">Sélectionner un projet</option>
               {projects.map(project => (
@@ -214,7 +214,7 @@ export const TaskForm: React.FC<TaskFormProps> = ({ task, projectId, parentTaskI
 
           {/* Title */}
           <div>
-            <label htmlFor="title" className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="title" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
               Titre de la tâche <span className="text-red-500">*</span>
             </label>
             <input
@@ -224,14 +224,14 @@ export const TaskForm: React.FC<TaskFormProps> = ({ task, projectId, parentTaskI
               value={formData.title}
               onChange={handleChange}
               required
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
               placeholder="Ex: Créer la maquette de la page d'accueil"
             />
           </div>
 
           {/* Description */}
           <div>
-            <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="description" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
               Description
             </label>
             <textarea
@@ -240,7 +240,7 @@ export const TaskForm: React.FC<TaskFormProps> = ({ task, projectId, parentTaskI
               value={formData.description}
               onChange={handleChange}
               rows={3}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
               placeholder="Détails de la tâche..."
             />
           </div>
@@ -248,7 +248,7 @@ export const TaskForm: React.FC<TaskFormProps> = ({ task, projectId, parentTaskI
           {/* Status and Priority */}
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label htmlFor="status" className="block text-sm font-medium text-gray-700 mb-1">
+              <label htmlFor="status" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                 Statut
               </label>
               <select
@@ -256,7 +256,7 @@ export const TaskForm: React.FC<TaskFormProps> = ({ task, projectId, parentTaskI
                 name="status"
                 value={formData.status}
                 onChange={handleChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
                 <option value="todo">À faire</option>
                 <option value="in_progress">En cours</option>
@@ -267,7 +267,7 @@ export const TaskForm: React.FC<TaskFormProps> = ({ task, projectId, parentTaskI
             </div>
 
             <div>
-              <label htmlFor="priority" className="block text-sm font-medium text-gray-700 mb-1">
+              <label htmlFor="priority" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                 Priorité
               </label>
               <select
@@ -275,7 +275,7 @@ export const TaskForm: React.FC<TaskFormProps> = ({ task, projectId, parentTaskI
                 name="priority"
                 value={formData.priority}
                 onChange={handleChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
                 <option value="low">Basse</option>
                 <option value="medium">Moyenne</option>
@@ -287,7 +287,7 @@ export const TaskForm: React.FC<TaskFormProps> = ({ task, projectId, parentTaskI
 
           {/* Parent Task */}
           <div>
-            <label htmlFor="parentTaskId" className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="parentTaskId" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
               Tâche parente
             </label>
             <select
@@ -295,7 +295,7 @@ export const TaskForm: React.FC<TaskFormProps> = ({ task, projectId, parentTaskI
               name="parentTaskId"
               value={formData.parentTaskId || ''}
               onChange={handleChange}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
               disabled={!formData.projectId}
             >
               <option value="">Aucune</option>
@@ -309,7 +309,7 @@ export const TaskForm: React.FC<TaskFormProps> = ({ task, projectId, parentTaskI
 
           {/* Milestone */}
           <div>
-            <label htmlFor="milestoneId" className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="milestoneId" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
               Jalon associé
             </label>
             <select
@@ -317,7 +317,7 @@ export const TaskForm: React.FC<TaskFormProps> = ({ task, projectId, parentTaskI
               name="milestoneId"
               value={formData.milestoneId || ''}
               onChange={handleChange}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
               disabled={!formData.projectId}
             >
               <option value="">Aucun</option>
@@ -331,37 +331,37 @@ export const TaskForm: React.FC<TaskFormProps> = ({ task, projectId, parentTaskI
 
           {/* Resource Assignments */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
               <Users className="w-4 h-4 inline mr-1" />
               Ressources assignées
             </label>
-            <div className="border border-gray-300 rounded-lg p-3 max-h-48 overflow-y-auto">
+            <div className="border border-gray-300 dark:border-gray-600 rounded-lg p-3 max-h-48 overflow-y-auto">
               {resources.length === 0 ? (
-                <p className="text-sm text-gray-500">Aucune ressource disponible</p>
+                <p className="text-sm text-gray-500 dark:text-gray-400">Aucune ressource disponible</p>
               ) : (
                 <div className="space-y-2">
                   {resources.map(resource => (
                     <label
                       key={resource.id}
-                      className="flex items-center gap-3 p-2 hover:bg-gray-50 rounded cursor-pointer"
+                      className="flex items-center gap-3 p-2 hover:bg-gray-50 dark:hover:bg-gray-700 rounded cursor-pointer"
                     >
                       <input
                         type="checkbox"
                         checked={selectedResourceIds.includes(resource.id)}
                         onChange={() => handleToggleResource(resource.id)}
-                        className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-2 focus:ring-blue-500"
+                        className="w-4 h-4 text-blue-600 border-gray-300 dark:border-gray-600 rounded focus:ring-2 focus:ring-blue-500"
                       />
                       <div className="flex-1">
-                        <div className="text-sm font-medium text-gray-900">
+                        <div className="text-sm font-medium text-gray-900 dark:text-white">
                           {resource.name}
                         </div>
                         {resource.role && (
-                          <div className="text-xs text-gray-500">
+                          <div className="text-xs text-gray-500 dark:text-gray-400">
                             {resource.role}
                           </div>
                         )}
                       </div>
-                      <div className="text-xs text-gray-500">
+                      <div className="text-xs text-gray-500 dark:text-gray-400">
                         {resource.availability}% dispo
                       </div>
                     </label>
@@ -370,7 +370,7 @@ export const TaskForm: React.FC<TaskFormProps> = ({ task, projectId, parentTaskI
               )}
             </div>
             {selectedResourceIds.length > 0 && (
-              <p className="text-xs text-gray-500 mt-1">
+              <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
                 {selectedResourceIds.length} ressource(s) sélectionnée(s)
               </p>
             )}
@@ -379,7 +379,7 @@ export const TaskForm: React.FC<TaskFormProps> = ({ task, projectId, parentTaskI
           {/* Hours */}
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label htmlFor="estimatedHours" className="block text-sm font-medium text-gray-700 mb-1">
+              <label htmlFor="estimatedHours" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                 Heures estimées
               </label>
               <input
@@ -390,13 +390,13 @@ export const TaskForm: React.FC<TaskFormProps> = ({ task, projectId, parentTaskI
                 onChange={handleChange}
                 min="0"
                 step="0.5"
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                 placeholder="Ex: 8"
               />
             </div>
 
             <div>
-              <label htmlFor="actualHours" className="block text-sm font-medium text-gray-700 mb-1">
+              <label htmlFor="actualHours" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                 Heures réelles
               </label>
               <input
@@ -407,7 +407,7 @@ export const TaskForm: React.FC<TaskFormProps> = ({ task, projectId, parentTaskI
                 onChange={handleChange}
                 min="0"
                 step="0.5"
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                 placeholder="Ex: 10"
               />
             </div>
@@ -416,7 +416,7 @@ export const TaskForm: React.FC<TaskFormProps> = ({ task, projectId, parentTaskI
           {/* Dates */}
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label htmlFor="startDate" className="block text-sm font-medium text-gray-700 mb-1">
+              <label htmlFor="startDate" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                 Date de début
               </label>
               <input
@@ -425,12 +425,12 @@ export const TaskForm: React.FC<TaskFormProps> = ({ task, projectId, parentTaskI
                 name="startDate"
                 value={formData.startDate}
                 onChange={handleChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
             </div>
 
             <div>
-              <label htmlFor="endDate" className="block text-sm font-medium text-gray-700 mb-1">
+              <label htmlFor="endDate" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                 Date de fin
               </label>
               <input
@@ -439,14 +439,14 @@ export const TaskForm: React.FC<TaskFormProps> = ({ task, projectId, parentTaskI
                 name="endDate"
                 value={formData.endDate}
                 onChange={handleChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
             </div>
           </div>
 
           {/* Tags */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
               Tags
             </label>
             <div className="flex gap-2 mb-2">
@@ -455,13 +455,13 @@ export const TaskForm: React.FC<TaskFormProps> = ({ task, projectId, parentTaskI
                 value={tagInput}
                 onChange={(e) => setTagInput(e.target.value)}
                 onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), handleAddTag())}
-                className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                 placeholder="Ajouter un tag..."
               />
               <button
                 type="button"
                 onClick={handleAddTag}
-                className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors"
+                className="px-4 py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
               >
                 Ajouter
               </button>
@@ -470,13 +470,13 @@ export const TaskForm: React.FC<TaskFormProps> = ({ task, projectId, parentTaskI
               {Array.isArray(formData.tags) && formData.tags.map(tag => (
                 <span
                   key={tag}
-                  className="px-2 py-1 bg-blue-100 text-blue-700 text-sm rounded-lg flex items-center gap-1"
+                  className="px-2 py-1 bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 text-sm rounded-lg flex items-center gap-1"
                 >
                   {tag}
                   <button
                     type="button"
                     onClick={() => handleRemoveTag(tag)}
-                    className="text-blue-500 hover:text-blue-700"
+                    className="text-blue-500 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-200"
                   >
                     <X className="w-3 h-3" />
                   </button>
@@ -486,11 +486,11 @@ export const TaskForm: React.FC<TaskFormProps> = ({ task, projectId, parentTaskI
           </div>
 
           {/* Actions */}
-          <div className="flex items-center justify-end gap-3 pt-4 border-t border-gray-200">
+          <div className="flex items-center justify-end gap-3 pt-4 border-t border-gray-200 dark:border-gray-700">
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
+              className="px-4 py-2 text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
             >
               Annuler
             </button>

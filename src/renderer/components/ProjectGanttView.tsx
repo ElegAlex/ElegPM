@@ -266,7 +266,7 @@ export const ProjectGanttView: React.FC<ProjectGanttViewProps> = ({ projectId, p
 
         <div className="flex items-center gap-3">
           {/* View mode selector */}
-          <div className="flex items-center gap-1 bg-gray-100 rounded-lg p-1">
+          <div className="flex items-center gap-1 bg-gray-100 dark:bg-gray-700 rounded-lg p-1">
             <button
               onClick={() => setViewMode('day')}
               className={`px-3 py-1.5 text-xs font-medium rounded transition-colors ${
@@ -302,7 +302,7 @@ export const ProjectGanttView: React.FC<ProjectGanttViewProps> = ({ projectId, p
           <button
             onClick={handleExportPDF}
             disabled={isExporting || timelineItems.length === 0}
-            className="flex items-center gap-2 px-3 py-1.5 border border-gray-300 text-gray-700 text-sm rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            className="flex items-center gap-2 px-3 py-1.5 border border-gray-300 text-gray-700 text-sm rounded-lg hover:bg-gray-50 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             title="Exporter en PDF"
           >
             <FileDown className="w-4 h-4" />
@@ -313,10 +313,10 @@ export const ProjectGanttView: React.FC<ProjectGanttViewProps> = ({ projectId, p
 
       {/* Empty State */}
       {timelineItems.length === 0 && (
-        <div className="flex-1 flex flex-col items-center justify-center text-gray-500 bg-gray-50 rounded-lg">
+        <div className="flex-1 flex flex-col items-center justify-center text-gray-500 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
           <Calendar className="w-12 h-12 mb-3 text-gray-300" />
-          <p className="text-sm font-medium mb-1">Aucune tâche avec dates ni jalon</p>
-          <p className="text-xs text-gray-500">
+          <p className="text-sm font-medium mb-1 dark:text-gray-400">Aucune tâche avec dates ni jalon</p>
+          <p className="text-xs text-gray-500 dark:text-gray-400">
             Ajoutez des tâches avec dates ou des jalons pour voir le Gantt
           </p>
         </div>
@@ -324,12 +324,12 @@ export const ProjectGanttView: React.FC<ProjectGanttViewProps> = ({ projectId, p
 
       {/* Gantt Chart */}
       {timelineItems.length > 0 && (
-        <div ref={ganttRef} className="flex-1 bg-white rounded-lg border border-gray-200 overflow-hidden flex flex-col">
+        <div ref={ganttRef} className="flex-1 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden flex flex-col">
           {/* Timeline Header */}
-          <div className="border-b border-gray-200 bg-gray-50">
+          <div className="border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-700">
             <div className="flex">
               {/* Task names column */}
-              <div className="w-64 flex-shrink-0 px-3 py-2 border-r border-gray-200 font-semibold text-xs text-gray-700">
+              <div className="w-64 flex-shrink-0 px-3 py-2 border-r border-gray-200 dark:border-gray-600 font-semibold text-xs text-gray-700 dark:text-gray-300">
                 Tâches
               </div>
 
@@ -338,7 +338,7 @@ export const ProjectGanttView: React.FC<ProjectGanttViewProps> = ({ projectId, p
                 {timelinePeriods.map((period, idx) => (
                   <div
                     key={idx}
-                    className="border-r border-gray-200 last:border-r-0 px-2 py-2 text-center text-xs font-medium text-gray-700"
+                    className="border-r border-gray-200 dark:border-gray-600 last:border-r-0 px-2 py-2 text-center text-xs font-medium text-gray-700 dark:text-gray-300"
                     style={{ width: `${(period.days / totalDays) * 100}%` }}
                   >
                     {period.label}
@@ -353,13 +353,13 @@ export const ProjectGanttView: React.FC<ProjectGanttViewProps> = ({ projectId, p
             {timelineItems.map((item) => (
               <div
                 key={item.type === 'task' ? item.data.id : `milestone-${item.data.id}`}
-                className="flex border-b border-gray-100 hover:bg-gray-50 group"
+                className="flex border-b border-gray-100 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 group"
               >
                 {item.type === 'task' ? (
                   <>
                     {/* Task name */}
-                    <div className="w-64 flex-shrink-0 px-3 py-2.5 border-r border-gray-200">
-                      <div className="text-xs font-medium text-gray-900 line-clamp-1 mb-1">
+                    <div className="w-64 flex-shrink-0 px-3 py-2.5 border-r border-gray-200 dark:border-gray-600">
+                      <div className="text-xs font-medium text-gray-900 dark:text-white line-clamp-1 mb-1">
                         {item.data.title}
                       </div>
                       <div className="flex items-center gap-2 text-xs">
@@ -367,7 +367,7 @@ export const ProjectGanttView: React.FC<ProjectGanttViewProps> = ({ projectId, p
                           {getStatusLabel(item.data.status)}
                         </span>
                         {item.data.estimatedHours && (
-                          <span className="text-gray-500">
+                          <span className="text-gray-500 dark:text-gray-400">
                             {item.data.estimatedHours}h
                           </span>
                         )}
@@ -381,7 +381,7 @@ export const ProjectGanttView: React.FC<ProjectGanttViewProps> = ({ projectId, p
                         {Array.from({ length: totalDays }).map((_, i) => (
                           <div
                             key={i}
-                            className="border-r border-gray-100"
+                            className="border-r border-gray-100 dark:border-gray-700"
                             style={{ width: `${dayWidth}%` }}
                           />
                         ))}
@@ -406,10 +406,10 @@ export const ProjectGanttView: React.FC<ProjectGanttViewProps> = ({ projectId, p
                 ) : (
                   <>
                     {/* Milestone name */}
-                    <div className="w-64 flex-shrink-0 px-3 py-2.5 border-r border-gray-200 bg-gray-50">
+                    <div className="w-64 flex-shrink-0 px-3 py-2.5 border-r border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700">
                       <div className="flex items-center gap-2 mb-1">
-                        <Flag className="w-4 h-4 text-gray-600" />
-                        <div className="text-xs font-semibold text-gray-900 line-clamp-1">
+                        <Flag className="w-4 h-4 text-gray-600 dark:text-gray-400" />
+                        <div className="text-xs font-semibold text-gray-900 dark:text-white line-clamp-1">
                           {item.data.name}
                         </div>
                       </div>
@@ -417,7 +417,7 @@ export const ProjectGanttView: React.FC<ProjectGanttViewProps> = ({ projectId, p
                         <span className={`px-1.5 py-0.5 rounded border ${getMilestoneStatusColor(item.data.status)}`}>
                           {getMilestoneStatusLabel(item.data.status)}
                         </span>
-                        <span className="text-gray-500">
+                        <span className="text-gray-500 dark:text-gray-400">
                           {new Date(item.data.targetDate).toLocaleDateString('fr-FR')}
                         </span>
                       </div>
@@ -430,7 +430,7 @@ export const ProjectGanttView: React.FC<ProjectGanttViewProps> = ({ projectId, p
                         {Array.from({ length: totalDays }).map((_, i) => (
                           <div
                             key={i}
-                            className="border-r border-gray-100"
+                            className="border-r border-gray-100 dark:border-gray-700"
                             style={{ width: `${dayWidth}%` }}
                           />
                         ))}
@@ -454,8 +454,8 @@ export const ProjectGanttView: React.FC<ProjectGanttViewProps> = ({ projectId, p
           </div>
 
           {/* Legend */}
-          <div className="border-t border-gray-200 bg-gray-50 px-3 py-2">
-            <div className="flex items-center gap-3 text-xs text-gray-600 flex-wrap">
+          <div className="border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-700 px-3 py-2">
+            <div className="flex items-center gap-3 text-xs text-gray-600 dark:text-gray-400 flex-wrap">
               <span className="font-medium">Vue:</span>
               <span>{viewMode === 'day' ? '30 jours' : viewMode === 'week' ? '12 semaines' : '12 mois'}</span>
               <span>·</span>

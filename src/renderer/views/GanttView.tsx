@@ -3,10 +3,12 @@ import { Calendar, FileDown } from 'lucide-react';
 import { useProjectsStore } from '../stores/projectsStore';
 import type { Project } from '../types/project';
 import { exportGanttToPDF } from '../lib/pdfExport';
+import { useTranslation } from '../i18n/useTranslation';
 
 type GanttViewMode = 'day' | 'week' | 'month';
 
 export const GanttView: React.FC = () => {
+  const { t } = useTranslation();
   const { projects, fetchProjects } = useProjectsStore();
   const [isExporting, setIsExporting] = useState(false);
   const [viewMode, setViewMode] = useState<GanttViewMode>('month');
@@ -153,11 +155,11 @@ export const GanttView: React.FC = () => {
 
   const getStatusLabel = (status: string) => {
     switch (status) {
-      case 'completed': return 'Terminé';
-      case 'in_progress': return 'En cours';
-      case 'on_hold': return 'En pause';
-      case 'not_started': return 'Non démarré';
-      case 'archived': return 'Archivé';
+      case 'completed': return t('statusCompleted');
+      case 'in_progress': return t('statusInProgress');
+      case 'on_hold': return t('statusPaused');
+      case 'not_started': return t('statusNotStarted');
+      case 'archived': return t('statusArchived');
       default: return status;
     }
   };
@@ -172,7 +174,7 @@ export const GanttView: React.FC = () => {
       await exportGanttToPDF(ganttRef.current);
     } catch (error) {
       console.error('Error exporting Gantt to PDF:', error);
-      alert('Erreur lors de l\'export du Gantt en PDF');
+      alert(t('ganttExportError'));
     } finally {
       setIsExporting(false);
     }
@@ -183,79 +185,79 @@ export const GanttView: React.FC = () => {
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h2 className="text-2xl font-bold text-gray-900 mb-1">Diagramme de Gantt - Vue Projets</h2>
-          <p className="text-sm text-gray-600">
-            Visualisation temporelle des projets ({projectsWithDates.length} projet(s))
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-1">{t('ganttTitle')}</h2>
+          <p className="text-sm text-gray-600 dark:text-gray-400">
+            {t('ganttDescription')} ({projectsWithDates.length} {t('ganttProjectCount')})
           </p>
         </div>
 
         <div className="flex items-center gap-3">
           {/* View mode selector */}
-          <div className="flex items-center gap-1 bg-gray-100 rounded-lg p-1">
+          <div className="flex items-center gap-1 bg-gray-100 dark:bg-gray-800 rounded-lg p-1">
             <button
               onClick={() => setViewMode('day')}
               className={`px-3 py-1.5 text-xs font-medium rounded transition-colors ${
                 viewMode === 'day'
-                  ? 'bg-white text-gray-900 shadow-sm'
-                  : 'text-gray-600 hover:text-gray-900'
+                  ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm'
+                  : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200'
               }`}
             >
-              Jour
+              {t('ganttViewDay')}
             </button>
             <button
               onClick={() => setViewMode('week')}
               className={`px-3 py-1.5 text-xs font-medium rounded transition-colors ${
                 viewMode === 'week'
-                  ? 'bg-white text-gray-900 shadow-sm'
-                  : 'text-gray-600 hover:text-gray-900'
+                  ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm'
+                  : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200'
               }`}
             >
-              Semaine
+              {t('ganttViewWeek')}
             </button>
             <button
               onClick={() => setViewMode('month')}
               className={`px-3 py-1.5 text-xs font-medium rounded transition-colors ${
                 viewMode === 'month'
-                  ? 'bg-white text-gray-900 shadow-sm'
-                  : 'text-gray-600 hover:text-gray-900'
+                  ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm'
+                  : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200'
               }`}
             >
-              Mois
+              {t('ganttViewMonth')}
             </button>
           </div>
 
           <button
             onClick={handleExportPDF}
             disabled={isExporting || projectsWithDates.length === 0}
-            className="flex items-center gap-2 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-            title="Exporter en PDF"
+            className="flex items-center gap-2 px-4 py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            title={t('ganttExportPDF')}
           >
             <FileDown className="w-5 h-5" />
-            {isExporting ? 'Export...' : 'Exporter PDF'}
+            {isExporting ? t('ganttExporting') : t('ganttExportPDF')}
           </button>
         </div>
       </div>
 
       {/* Empty State */}
       {projectsWithDates.length === 0 && (
-        <div className="flex-1 flex flex-col items-center justify-center text-gray-500">
-          <Calendar className="w-16 h-16 mb-4 text-gray-300" />
-          <p className="text-lg font-medium mb-2">Aucun projet avec dates</p>
+        <div className="flex-1 flex flex-col items-center justify-center text-gray-500 dark:text-gray-400">
+          <Calendar className="w-16 h-16 mb-4 text-gray-300 dark:text-gray-600" />
+          <p className="text-lg font-medium mb-2">{t('ganttNoProjectsWithDates')}</p>
           <p className="text-sm">
-            Les projets doivent avoir une date de début et de fin pour apparaître dans le Gantt
+            {t('ganttNoProjectsMessage')}
           </p>
         </div>
       )}
 
       {/* Gantt Chart */}
       {projectsWithDates.length > 0 && (
-        <div ref={ganttRef} className="flex-1 bg-white rounded-lg border border-gray-200 overflow-hidden flex flex-col">
+        <div ref={ganttRef} className="flex-1 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden flex flex-col">
           {/* Timeline Header */}
-          <div className="border-b border-gray-200 bg-gray-50">
+          <div className="border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900">
             <div className="flex">
               {/* Project names column */}
-              <div className="w-80 flex-shrink-0 px-4 py-3 border-r border-gray-200 font-semibold text-sm text-gray-700">
-                Projets
+              <div className="w-80 flex-shrink-0 px-4 py-3 border-r border-gray-200 dark:border-gray-700 font-semibold text-sm text-gray-700 dark:text-gray-300">
+                {t('ganttProjectsHeader')}
               </div>
 
               {/* Timeline periods */}
@@ -263,7 +265,7 @@ export const GanttView: React.FC = () => {
                 {timelinePeriods.map((period, idx) => (
                   <div
                     key={idx}
-                    className="border-r border-gray-200 last:border-r-0 px-2 py-3 text-center text-sm font-medium text-gray-700"
+                    className="border-r border-gray-200 dark:border-gray-700 last:border-r-0 px-2 py-3 text-center text-sm font-medium text-gray-700 dark:text-gray-300"
                     style={{ width: `${(period.days / totalDays) * 100}%` }}
                   >
                     {period.label}
@@ -276,20 +278,20 @@ export const GanttView: React.FC = () => {
           {/* Projects and Bars */}
           <div className="flex-1 overflow-y-auto">
             {projectsWithDates.map((project) => (
-              <div key={project.id} className="flex border-b border-gray-100 hover:bg-gray-50 group">
+              <div key={project.id} className="flex border-b border-gray-100 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700/50 group">
                 {/* Project name and info */}
-                <div className="w-80 flex-shrink-0 px-4 py-4 border-r border-gray-200">
+                <div className="w-80 flex-shrink-0 px-4 py-4 border-r border-gray-200 dark:border-gray-700">
                   <div className="flex items-center gap-2 mb-1">
                     <div
                       className="w-3 h-3 rounded-full flex-shrink-0"
                       style={{ backgroundColor: project.color }}
                     />
-                    <div className="text-sm font-semibold text-gray-900 line-clamp-1">
+                    <div className="text-sm font-semibold text-gray-900 dark:text-white line-clamp-1">
                       {project.name}
                     </div>
                   </div>
                   {project.description && (
-                    <div className="text-xs text-gray-500 line-clamp-1 mb-2">
+                    <div className="text-xs text-gray-500 dark:text-gray-400 line-clamp-1 mb-2">
                       {project.description}
                     </div>
                   )}
@@ -297,7 +299,7 @@ export const GanttView: React.FC = () => {
                     <span className={`px-2 py-0.5 rounded-full ${getStatusColor(project.status)} text-white`}>
                       {getStatusLabel(project.status)}
                     </span>
-                    <span className="text-gray-600">
+                    <span className="text-gray-600 dark:text-gray-400">
                       {project.progress}%
                     </span>
                   </div>
@@ -310,7 +312,7 @@ export const GanttView: React.FC = () => {
                     {Array.from({ length: totalDays }).map((_, i) => (
                       <div
                         key={i}
-                        className="border-r border-gray-100"
+                        className="border-r border-gray-100 dark:border-gray-700"
                         style={{ width: `${dayWidth}%` }}
                       />
                     ))}
@@ -327,7 +329,7 @@ export const GanttView: React.FC = () => {
                   >
                     {/* Progress bar */}
                     <div
-                      className="h-full bg-white/30"
+                      className="h-full bg-white/30 dark:bg-gray-900/30"
                       style={{ width: `${project.progress}%` }}
                     />
                     <div className="absolute inset-0 flex items-center justify-between px-3 text-white text-xs font-medium">
@@ -341,15 +343,15 @@ export const GanttView: React.FC = () => {
           </div>
 
           {/* Legend */}
-          <div className="border-t border-gray-200 bg-gray-50 px-4 py-3">
-            <div className="flex items-center gap-4 text-xs text-gray-600">
-              <span className="font-medium">Vue:</span>
-              <span>{viewMode === 'day' ? '30 jours' : viewMode === 'week' ? '12 semaines' : '12 mois'}</span>
+          <div className="border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 px-4 py-3">
+            <div className="flex items-center gap-4 text-xs text-gray-600 dark:text-gray-400">
+              <span className="font-medium">{t('ganttViewLabel')}:</span>
+              <span>{viewMode === 'day' ? t('gantt30Days') : viewMode === 'week' ? t('gantt12Weeks') : t('gantt12Months')}</span>
               <span>·</span>
-              <span className="font-medium">Période:</span>
+              <span className="font-medium">{t('ganttPeriodLabel')}:</span>
               <span>{timelineStart.toLocaleDateString('fr-FR')} - {timelineEnd.toLocaleDateString('fr-FR')}</span>
               <span>·</span>
-              <span>{projectsWithDates.length} projet(s)</span>
+              <span>{projectsWithDates.length} {t('ganttProjectCount')}</span>
             </div>
           </div>
         </div>

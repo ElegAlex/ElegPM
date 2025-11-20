@@ -122,9 +122,9 @@ export const AttachmentsList: React.FC<AttachmentsListProps> = ({ taskId, onAddA
 
       {/* Empty State */}
       {attachments.length === 0 && (
-        <div className="text-center py-8 bg-gray-50 rounded-lg">
+        <div className="text-center py-8 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
           <Paperclip className="w-12 h-12 text-gray-300 mx-auto mb-3" />
-          <p className="text-gray-600 text-sm mb-2">Aucune pièce jointe</p>
+          <p className="text-gray-600 dark:text-gray-400 text-sm mb-2">Aucune pièce jointe</p>
           {onAddAttachment && (
             <button
               onClick={onAddAttachment}
@@ -142,7 +142,7 @@ export const AttachmentsList: React.FC<AttachmentsListProps> = ({ taskId, onAddA
           {attachments.map((attachment) => (
             <div
               key={attachment.id}
-              className="bg-white border border-gray-200 rounded-lg p-3 hover:shadow-sm transition-shadow"
+              className="bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg p-3 hover:shadow-sm transition-shadow"
             >
               <div className="flex items-center gap-3">
                 {/* File Icon */}
@@ -152,10 +152,10 @@ export const AttachmentsList: React.FC<AttachmentsListProps> = ({ taskId, onAddA
 
                 {/* File Info */}
                 <div className="flex-1 min-w-0">
-                  <div className="font-medium text-gray-900 text-sm truncate">
+                  <div className="font-medium text-gray-900 dark:text-white text-sm truncate">
                     {attachment.filename}
                   </div>
-                  <div className="flex items-center gap-2 text-xs text-gray-500">
+                  <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
                     <span>{formatFileSize(attachment.fileSize)}</span>
                     <span>•</span>
                     <span>{formatDate(attachment.createdAt)}</span>

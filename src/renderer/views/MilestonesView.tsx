@@ -5,20 +5,22 @@ import { useProjectsStore } from '../stores/projectsStore';
 import { MilestoneForm } from '../components/MilestoneForm';
 import type { Milestone } from '../types/milestone';
 import { exportMilestonesToExcel } from '../lib/excelExport';
-
-const statusConfig = {
-  pending: { label: 'En attente', color: 'bg-yellow-100 text-yellow-700 border-yellow-300' },
-  achieved: { label: 'Atteint', color: 'bg-green-100 text-green-700 border-green-300' },
-  missed: { label: 'Manqué', color: 'bg-red-100 text-red-700 border-red-300' },
-};
+import { useTranslation } from '../i18n/useTranslation';
 
 export const MilestonesView: React.FC = () => {
+  const { t } = useTranslation();
   const { milestones, isLoading, error, fetchMilestones, deleteMilestone, createMilestone } = useMilestonesStore();
   const { projects, fetchProjects } = useProjectsStore();
   const [selectedProject, setSelectedProject] = useState<string>('all');
   const [showForm, setShowForm] = useState(false);
   const [editingMilestone, setEditingMilestone] = useState<Milestone | null>(null);
   const [isExporting, setIsExporting] = useState(false);
+
+  const statusConfig = {
+    pending: { label: t('statusPending'), color: 'bg-yellow-100 text-yellow-700 border-yellow-300' },
+    achieved: { label: t('statusAchieved'), color: 'bg-green-100 text-green-700 border-green-300' },
+    missed: { label: t('statusMissed'), color: 'bg-red-100 text-red-700 border-red-300' },
+  };
 
   useEffect(() => {
     fetchProjects();
@@ -35,7 +37,7 @@ export const MilestonesView: React.FC = () => {
 
   const getProjectName = (projectId: string) => {
     const project = projects.find(p => p.id === projectId);
-    return project?.name || 'Projet inconnu';
+    return project?.name || t('unknownProject');
   };
 
   const getProjectColor = (projectId: string) => {
@@ -49,7 +51,7 @@ export const MilestonesView: React.FC = () => {
   };
 
   const handleDelete = async (id: string) => {
-    if (confirm('Êtes-vous sûr de vouloir supprimer ce jalon ?')) {
+    if (confirm(t('confirmDeleteMilestone'))) {
       try {
         await deleteMilestone(id);
       } catch (error) {
@@ -74,7 +76,7 @@ export const MilestonesView: React.FC = () => {
       await exportMilestonesToExcel(filteredMilestones, projects);
     } catch (error) {
       console.error('Error exporting milestones:', error);
-      alert('Erreur lors de l\'export des jalons');
+      alert(t('error') + ': ' + t('exportTitle'));
     } finally {
       setIsExporting(false);
     }
@@ -92,7 +94,7 @@ export const MilestonesView: React.FC = () => {
             onChange={(e) => setSelectedProject(e.target.value)}
             className="px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
           >
-            <option value="all">Tous les projets</option>
+            <option value="all">{t('allProjects')}</option>
             {projects.map(project => (
               <option key={project.id} value={project.id}>
                 {project.name}
@@ -104,18 +106,18 @@ export const MilestonesView: React.FC = () => {
           <button
             onClick={handleExport}
             disabled={isExporting || filteredMilestones.length === 0}
-            className="flex items-center gap-2 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-            title="Exporter vers Excel"
+            className="flex items-center gap-2 px-4 py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            title={t('exportToExcel')}
           >
             <Download className="w-5 h-5" />
-            {isExporting ? 'Export...' : 'Exporter'}
+            {isExporting ? t('exporting') : t('export')}
           </button>
           <button
             onClick={() => setShowForm(true)}
-            className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+            className="flex items-center gap-2 px-4 py-2 bg-blue-600 dark:bg-blue-700 text-white rounded-lg hover:bg-blue-700 dark:hover:bg-blue-800 transition-colors"
           >
             <Plus className="w-5 h-5" />
-            Nouveau jalon
+            {t('newMilestone')}
           </button>
         </div>
       </div>
@@ -130,7 +132,7 @@ export const MilestonesView: React.FC = () => {
       {/* Loading State */}
       {isLoading && (
         <div className="flex-1 flex items-center justify-center">
-          <div className="text-gray-500">Chargement des jalons...</div>
+          <div className="text-gray-500">{t('loadingData')}</div>
         </div>
       )}
 
@@ -138,37 +140,37 @@ export const MilestonesView: React.FC = () => {
       {!isLoading && sortedMilestones.length === 0 && (
         <div className="flex-1 flex flex-col items-center justify-center text-gray-500">
           <Flag className="w-16 h-16 mb-4 text-gray-300" />
-          <p className="text-lg font-medium mb-2">Aucun jalon</p>
-          <p className="text-sm">Créez votre premier jalon pour marquer les étapes importantes</p>
+          <p className="text-lg font-medium mb-2">{t('noMilestones')}</p>
+          <p className="text-sm">{t('createFirstMilestone')}</p>
         </div>
       )}
 
       {/* Milestones Table */}
       {!isLoading && sortedMilestones.length > 0 && (
-        <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+        <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
           <table className="w-full">
-            <thead className="bg-gray-50 border-b border-gray-200">
+            <thead className="bg-gray-50 dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700">
               <tr>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Jalon
+                  {t('milestone')}
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Projet
+                  {t('project')}
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Date cible
+                  {t('targetDate')}
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Statut
+                  {t('projectStatus')}
                 </th>
                 <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Actions
+                  {t('actions')}
                 </th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200">
               {sortedMilestones.map(milestone => (
-                <tr key={milestone.id} className="hover:bg-gray-50 transition-colors">
+                <tr key={milestone.id} className="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
                   {/* Milestone Name */}
                   <td className="px-6 py-4">
                     <div className="flex items-center gap-3">
@@ -177,7 +179,7 @@ export const MilestonesView: React.FC = () => {
                         style={{ backgroundColor: milestone.color }}
                       />
                       <div>
-                        <div className="font-medium text-gray-900">
+                        <div className="font-medium text-gray-900 dark:text-white">
                           {milestone.name}
                         </div>
                         {milestone.description && (
@@ -196,7 +198,7 @@ export const MilestonesView: React.FC = () => {
                         className="w-2 h-2 rounded-full"
                         style={{ backgroundColor: getProjectColor(milestone.projectId) }}
                       />
-                      <span className="text-sm text-gray-700">
+                      <span className="text-sm text-gray-700 dark:text-gray-300">
                         {getProjectName(milestone.projectId)}
                       </span>
                     </div>
@@ -221,7 +223,7 @@ export const MilestonesView: React.FC = () => {
                       </span>
                       {isOverdue(milestone.targetDate, milestone.status) && (
                         <span className="text-xs text-red-600 font-medium">
-                          (En retard)
+                          ({t('overdue')})
                         </span>
                       )}
                     </div>
@@ -244,14 +246,14 @@ export const MilestonesView: React.FC = () => {
                       <button
                         onClick={() => handleEdit(milestone)}
                         className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded transition-colors"
-                        title="Modifier"
+                        title={t('edit')}
                       >
                         <Edit2 className="w-4 h-4" />
                       </button>
                       <button
                         onClick={() => handleDelete(milestone.id)}
                         className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded transition-colors"
-                        title="Supprimer"
+                        title={t('delete')}
                       >
                         <Trash2 className="w-4 h-4" />
                       </button>

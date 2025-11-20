@@ -65,15 +65,15 @@ export const MilestoneForm: React.FC<MilestoneFormProps> = ({ milestone, project
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
         {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b border-gray-200">
-          <h2 className="text-xl font-semibold text-gray-900">
+        <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700">
+          <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
             {milestone ? 'Modifier le jalon' : 'Nouveau jalon'}
           </h2>
           <button
             onClick={onClose}
-            className="text-gray-400 hover:text-gray-600 transition-colors"
+            className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
           >
             <X className="w-6 h-6" />
           </button>
@@ -83,7 +83,7 @@ export const MilestoneForm: React.FC<MilestoneFormProps> = ({ milestone, project
         <form onSubmit={handleSubmit} className="p-6 space-y-4">
           {/* Project Selection */}
           <div>
-            <label htmlFor="projectId" className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="projectId" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
               Projet <span className="text-red-500">*</span>
             </label>
             <select
@@ -92,7 +92,7 @@ export const MilestoneForm: React.FC<MilestoneFormProps> = ({ milestone, project
               value={formData.projectId}
               onChange={handleChange}
               required
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
               <option value="">Sélectionner un projet</option>
               {projects.map(project => (
@@ -105,7 +105,7 @@ export const MilestoneForm: React.FC<MilestoneFormProps> = ({ milestone, project
 
           {/* Name */}
           <div>
-            <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="name" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
               Nom du jalon <span className="text-red-500">*</span>
             </label>
             <input
@@ -115,14 +115,14 @@ export const MilestoneForm: React.FC<MilestoneFormProps> = ({ milestone, project
               value={formData.name}
               onChange={handleChange}
               required
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
               placeholder="Ex: Lancement de la beta"
             />
           </div>
 
           {/* Description */}
           <div>
-            <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="description" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
               Description
             </label>
             <textarea
@@ -131,7 +131,7 @@ export const MilestoneForm: React.FC<MilestoneFormProps> = ({ milestone, project
               value={formData.description}
               onChange={handleChange}
               rows={3}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
               placeholder="Décrivez ce qui marque ce jalon..."
             />
           </div>
@@ -139,7 +139,7 @@ export const MilestoneForm: React.FC<MilestoneFormProps> = ({ milestone, project
           {/* Target Date and Status */}
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label htmlFor="targetDate" className="block text-sm font-medium text-gray-700 mb-1">
+              <label htmlFor="targetDate" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                 Date cible <span className="text-red-500">*</span>
               </label>
               <input
@@ -149,12 +149,12 @@ export const MilestoneForm: React.FC<MilestoneFormProps> = ({ milestone, project
                 value={formData.targetDate}
                 onChange={handleChange}
                 required
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
             </div>
 
             <div>
-              <label htmlFor="status" className="block text-sm font-medium text-gray-700 mb-1">
+              <label htmlFor="status" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                 Statut
               </label>
               <select
@@ -162,7 +162,7 @@ export const MilestoneForm: React.FC<MilestoneFormProps> = ({ milestone, project
                 name="status"
                 value={formData.status}
                 onChange={handleChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
                 <option value="pending">En attente</option>
                 <option value="achieved">Atteint</option>
@@ -173,7 +173,7 @@ export const MilestoneForm: React.FC<MilestoneFormProps> = ({ milestone, project
 
           {/* Color */}
           <div>
-            <label htmlFor="color" className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="color" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
               Couleur
             </label>
             <div className="flex items-center gap-3">
@@ -183,25 +183,25 @@ export const MilestoneForm: React.FC<MilestoneFormProps> = ({ milestone, project
                 name="color"
                 value={formData.color}
                 onChange={handleChange}
-                className="w-12 h-10 border border-gray-300 rounded cursor-pointer"
+                className="w-12 h-10 border border-gray-300 dark:border-gray-600 rounded cursor-pointer"
               />
               <input
                 type="text"
                 value={formData.color}
                 onChange={handleChange}
                 name="color"
-                className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                 placeholder="#10B981"
               />
             </div>
           </div>
 
           {/* Actions */}
-          <div className="flex items-center justify-end gap-3 pt-4 border-t border-gray-200">
+          <div className="flex items-center justify-end gap-3 pt-4 border-t border-gray-200 dark:border-gray-700">
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
+              className="px-4 py-2 text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
             >
               Annuler
             </button>

@@ -61,15 +61,15 @@ export const ResourceForm: React.FC<ResourceFormProps> = ({ resource, onClose })
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
         {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b border-gray-200">
-          <h2 className="text-xl font-semibold text-gray-900">
+        <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700">
+          <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
             {resource ? 'Modifier la ressource' : 'Nouvelle ressource'}
           </h2>
           <button
             onClick={onClose}
-            className="text-gray-400 hover:text-gray-600 transition-colors"
+            className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
           >
             <X className="w-6 h-6" />
           </button>
@@ -79,7 +79,7 @@ export const ResourceForm: React.FC<ResourceFormProps> = ({ resource, onClose })
         <form onSubmit={handleSubmit} className="p-6 space-y-4">
           {/* Name */}
           <div>
-            <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="name" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
               Nom complet <span className="text-red-500">*</span>
             </label>
             <input
@@ -89,7 +89,7 @@ export const ResourceForm: React.FC<ResourceFormProps> = ({ resource, onClose })
               value={formData.name}
               onChange={handleChange}
               required
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
               placeholder="Ex: Marie Dupont"
             />
           </div>
@@ -97,7 +97,7 @@ export const ResourceForm: React.FC<ResourceFormProps> = ({ resource, onClose })
           {/* Role and Department */}
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label htmlFor="role" className="block text-sm font-medium text-gray-700 mb-1">
+              <label htmlFor="role" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                 Rôle / Fonction
               </label>
               <input
@@ -106,13 +106,13 @@ export const ResourceForm: React.FC<ResourceFormProps> = ({ resource, onClose })
                 name="role"
                 value={formData.role}
                 onChange={handleChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                 placeholder="Ex: Chef de projet"
               />
             </div>
 
             <div>
-              <label htmlFor="department" className="block text-sm font-medium text-gray-700 mb-1">
+              <label htmlFor="department" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                 Département
               </label>
               <input
@@ -121,7 +121,7 @@ export const ResourceForm: React.FC<ResourceFormProps> = ({ resource, onClose })
                 name="department"
                 value={formData.department}
                 onChange={handleChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                 placeholder="Ex: IT"
               />
             </div>
@@ -129,7 +129,7 @@ export const ResourceForm: React.FC<ResourceFormProps> = ({ resource, onClose })
 
           {/* Email */}
           <div>
-            <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="email" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
               Email
             </label>
             <input
@@ -138,14 +138,14 @@ export const ResourceForm: React.FC<ResourceFormProps> = ({ resource, onClose })
               name="email"
               value={formData.email}
               onChange={handleChange}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
               placeholder="Ex: marie.dupont@example.com"
             />
           </div>
 
           {/* Availability */}
           <div>
-            <label htmlFor="availability" className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="availability" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
               Disponibilité (%)
             </label>
             <div className="flex items-center gap-4">
@@ -161,12 +161,12 @@ export const ResourceForm: React.FC<ResourceFormProps> = ({ resource, onClose })
                 className="flex-1"
               />
               <div className="w-16 text-center">
-                <span className="text-lg font-semibold text-gray-900">
+                <span className="text-lg font-semibold text-gray-900 dark:text-white">
                   {formData.availability}%
                 </span>
               </div>
             </div>
-            <div className="mt-2 w-full bg-gray-200 rounded-full h-2">
+            <div className="mt-2 w-full bg-gray-200 dark:bg-gray-600 rounded-full h-2">
               <div
                 className={`h-2 rounded-full transition-all ${
                   formData.availability >= 80
@@ -178,17 +178,17 @@ export const ResourceForm: React.FC<ResourceFormProps> = ({ resource, onClose })
                 style={{ width: `${formData.availability}%` }}
               />
             </div>
-            <p className="mt-1 text-xs text-gray-500">
+            <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
               Indique le pourcentage de temps disponible pour les projets
             </p>
           </div>
 
           {/* Actions */}
-          <div className="flex items-center justify-end gap-3 pt-4 border-t border-gray-200">
+          <div className="flex items-center justify-end gap-3 pt-4 border-t border-gray-200 dark:border-gray-700">
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
+              className="px-4 py-2 text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
             >
               Annuler
             </button>

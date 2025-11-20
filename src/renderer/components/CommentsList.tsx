@@ -90,9 +90,9 @@ export const CommentsList: React.FC<CommentsListProps> = ({ taskId, onAddComment
 
       {/* Empty State */}
       {comments.length === 0 && (
-        <div className="text-center py-8 bg-gray-50 rounded-lg">
+        <div className="text-center py-8 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
           <MessageCircle className="w-12 h-12 text-gray-300 mx-auto mb-3" />
-          <p className="text-gray-600 text-sm mb-2">Aucun commentaire</p>
+          <p className="text-gray-600 dark:text-gray-400 text-sm mb-2">Aucun commentaire</p>
           {onAddComment && (
             <button
               onClick={onAddComment}
@@ -110,34 +110,34 @@ export const CommentsList: React.FC<CommentsListProps> = ({ taskId, onAddComment
           {comments.map((comment) => (
             <div
               key={comment.id}
-              className="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-sm transition-shadow"
+              className="bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg p-4 hover:shadow-sm transition-shadow"
             >
               <div className="flex items-start gap-3">
                 {/* Avatar */}
-                <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0">
-                  <User className="w-4 h-4 text-blue-600" />
+                <div className="w-8 h-8 bg-blue-100 dark:bg-blue-900 rounded-full flex items-center justify-center flex-shrink-0">
+                  <User className="w-4 h-4 text-blue-600 dark:text-blue-400" />
                 </div>
 
                 {/* Content */}
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center justify-between mb-1">
                     <div className="flex items-center gap-2">
-                      <span className="font-medium text-gray-900 text-sm">
+                      <span className="font-medium text-gray-900 dark:text-white text-sm">
                         {comment.author}
                       </span>
-                      <span className="text-xs text-gray-500">
+                      <span className="text-xs text-gray-500 dark:text-gray-400">
                         {formatDate(comment.createdAt)}
                       </span>
                     </div>
                     <button
                       onClick={() => handleDelete(comment.id)}
-                      className="p-1 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded transition-colors"
+                      className="p-1 text-gray-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900 rounded transition-colors"
                       title="Supprimer"
                     >
                       <Trash2 className="w-3.5 h-3.5" />
                     </button>
                   </div>
-                  <p className="text-sm text-gray-700 whitespace-pre-wrap break-words">
+                  <p className="text-sm text-gray-700 dark:text-gray-300 whitespace-pre-wrap break-words">
                     {comment.content}
                   </p>
                 </div>

@@ -5,14 +5,7 @@ import { useProjectsStore } from '../stores/projectsStore';
 import { TaskForm } from '../components/TaskForm';
 import type { Task, TaskStatus } from '../types/task';
 import { exportTasksToExcel } from '../lib/excelExport';
-
-const statusConfig = {
-  todo: { label: 'À faire', color: 'bg-gray-100 border-gray-300' },
-  in_progress: { label: 'En cours', color: 'bg-blue-100 border-blue-300' },
-  review: { label: 'En revue', color: 'bg-purple-100 border-purple-300' },
-  done: { label: 'Terminé', color: 'bg-green-100 border-green-300' },
-  blocked: { label: 'Bloqué', color: 'bg-red-100 border-red-300' },
-};
+import { useTranslation } from '../i18n/useTranslation';
 
 const priorityColors = {
   low: 'text-gray-600',
@@ -22,6 +15,7 @@ const priorityColors = {
 };
 
 export const TasksView: React.FC = () => {
+  const { t } = useTranslation();
   const { tasks, isLoading, error, fetchTasks, updateTaskStatus, deleteTask, createTask } = useTasksStore();
   const { projects, fetchProjects } = useProjectsStore();
   const [selectedProject, setSelectedProject] = useState<string>('all');
@@ -30,6 +24,14 @@ export const TasksView: React.FC = () => {
   const [editingTask, setEditingTask] = useState<Task | null>(null);
   const [draggedTask, setDraggedTask] = useState<Task | null>(null);
   const [isExporting, setIsExporting] = useState(false);
+
+  const statusConfig = {
+    todo: { label: t('statusTodo'), color: 'bg-gray-100 border-gray-300' },
+    in_progress: { label: t('statusInProgress'), color: 'bg-blue-100 border-blue-300' },
+    review: { label: t('statusInReview'), color: 'bg-purple-100 border-purple-300' },
+    done: { label: t('statusDone'), color: 'bg-green-100 border-green-300' },
+    blocked: { label: t('statusBlocked'), color: 'bg-red-100 border-red-300' },
+  };
 
   useEffect(() => {
     fetchProjects();
@@ -102,7 +104,7 @@ export const TasksView: React.FC = () => {
 
   const getProjectName = (projectId: string) => {
     const project = projects.find(p => p.id === projectId);
-    return project?.name || 'Projet inconnu';
+    return project?.name || t('unknownProject');
   };
 
   const getProjectColor = (projectId: string) => {
@@ -118,7 +120,7 @@ export const TasksView: React.FC = () => {
 
   const handleDelete = async (id: string, e: React.MouseEvent) => {
     e.stopPropagation();
-    if (confirm('Êtes-vous sûr de vouloir supprimer cette tâche ?')) {
+    if (confirm(t('confirmDeleteTask'))) {
       try {
         await deleteTask(id);
       } catch (error) {
@@ -138,7 +140,7 @@ export const TasksView: React.FC = () => {
       await exportTasksToExcel(filteredTasks, projects);
     } catch (error) {
       console.error('Error exporting tasks:', error);
-      alert('Erreur lors de l\'export des tâches');
+      alert(t('error') + ': ' + t('exportTitle'));
     } finally {
       setIsExporting(false);
     }
@@ -156,7 +158,7 @@ export const TasksView: React.FC = () => {
             onChange={(e) => setSelectedProject(e.target.value)}
             className="px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
           >
-            <option value="all">Tous les projets</option>
+            <option value="all">{t('allProjects')}</option>
             {projects.map(project => (
               <option key={project.id} value={project.id}>
                 {project.name}
@@ -168,33 +170,33 @@ export const TasksView: React.FC = () => {
           <button
             onClick={handleExport}
             disabled={isExporting || filteredTasks.length === 0}
-            className="flex items-center gap-2 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-            title="Exporter vers Excel"
+            className="flex items-center gap-2 px-4 py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            title={t('exportToExcel')}
           >
             <Download className="w-5 h-5" />
-            {isExporting ? 'Export...' : 'Exporter'}
+            {isExporting ? t('exporting') : t('export')}
           </button>
           <button
             onClick={() => setShowForm(true)}
-            className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+            className="flex items-center gap-2 px-4 py-2 bg-blue-600 dark:bg-blue-700 text-white rounded-lg hover:bg-blue-700 dark:hover:bg-blue-800 transition-colors"
           >
             <Plus className="w-5 h-5" />
-            Nouvelle tâche
+            {t('newTask')}
           </button>
         </div>
       </div>
 
       {/* Tag Filter Section */}
-      <div className="mb-4 p-3 bg-gray-50 rounded-lg border border-gray-200">
+      <div className="mb-4 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
           <div className="flex items-center gap-2 mb-2">
-            <Tag className="w-4 h-4 text-gray-600" />
-            <span className="text-sm font-medium text-gray-700">Filtrer par tags:</span>
+            <Tag className="w-4 h-4 text-gray-600 dark:text-gray-400" />
+            <span className="text-sm font-medium text-gray-700 dark:text-gray-300">{t('filterByTags')}:</span>
             {selectedTags.length > 0 && (
               <button
                 onClick={() => setSelectedTags([])}
                 className="text-xs text-blue-600 hover:text-blue-800 ml-auto"
               >
-                Réinitialiser
+                {t('resetFilters')}
               </button>
             )}
           </div>
@@ -214,7 +216,7 @@ export const TasksView: React.FC = () => {
                   className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-sm transition-all ${
                     isSelected
                       ? 'bg-blue-500 text-white shadow-sm'
-                      : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-100'
+                      : 'bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-600'
                   }`}
                 >
                   <Tag className="w-3 h-3" />
@@ -226,12 +228,12 @@ export const TasksView: React.FC = () => {
           </div>
           {selectedTags.length > 0 && (
             <div className="mt-2 text-xs text-gray-600">
-              {filteredTasks.length} tâche(s) affichée(s) sur {projectFilteredTasks.length}
+              {filteredTasks.length} {t('tasksDisplayedOutOf')} {projectFilteredTasks.length}
             </div>
           )}
           {allTags.length === 0 && (
             <div className="text-sm text-gray-500 italic">
-              Aucun tag disponible. Ajoutez des tags aux tâches pour les filtrer.
+              {t('noTagsAvailable')}
             </div>
           )}
         </div>
@@ -246,7 +248,7 @@ export const TasksView: React.FC = () => {
       {/* Loading State */}
       {isLoading && (
         <div className="flex-1 flex items-center justify-center">
-          <div className="text-gray-500">Chargement des tâches...</div>
+          <div className="text-gray-500">{t('loadingData')}</div>
         </div>
       )}
 
@@ -263,27 +265,27 @@ export const TasksView: React.FC = () => {
               {/* Column Header */}
               <div className={`px-4 py-3 rounded-t-lg border-2 ${statusConfig[status].color}`}>
                 <div className="flex items-center justify-between">
-                  <span className="font-semibold text-gray-700">
+                  <span className="font-semibold text-gray-700 dark:text-gray-300">
                     {statusConfig[status].label}
                   </span>
-                  <span className="text-sm font-medium text-gray-600 bg-white px-2 py-0.5 rounded-full">
+                  <span className="text-sm font-medium text-gray-600 dark:text-gray-400 bg-white dark:bg-gray-800 px-2 py-0.5 rounded-full">
                     {tasksByStatus(status).length}
                   </span>
                 </div>
               </div>
 
               {/* Tasks Column */}
-              <div className="flex-1 bg-gray-50 rounded-b-lg border-2 border-t-0 border-gray-200 p-3 space-y-3 overflow-y-auto">
+              <div className="flex-1 bg-gray-50 dark:bg-gray-800 rounded-b-lg border-2 border-t-0 border-gray-200 dark:border-gray-700 p-3 space-y-3 overflow-y-auto">
                 {tasksByStatus(status).map(task => (
                   <div
                     key={task.id}
                     draggable
                     onDragStart={() => handleDragStart(task)}
-                    className="bg-white rounded-lg border border-gray-200 p-3 cursor-move hover:shadow-md transition-shadow group"
+                    className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-3 cursor-move hover:shadow-md transition-shadow group"
                   >
                     {/* Task Header */}
                     <div className="flex items-start justify-between gap-2 mb-2">
-                      <h4 className="font-medium text-gray-900 text-sm line-clamp-2 flex-1">
+                      <h4 className="font-medium text-gray-900 dark:text-white text-sm line-clamp-2 flex-1">
                         {task.title}
                       </h4>
                       <div className="flex items-center gap-1">
@@ -295,15 +297,15 @@ export const TasksView: React.FC = () => {
                         <div className="opacity-0 group-hover:opacity-100 transition-opacity flex gap-0.5">
                           <button
                             onClick={(e) => handleEdit(task, e)}
-                            className="p-1 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded"
-                            title="Modifier"
+                            className="p-1 text-gray-400 dark:text-gray-500 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded"
+                            title={t('edit')}
                           >
                             <Edit2 className="w-3 h-3" />
                           </button>
                           <button
                             onClick={(e) => handleDelete(task.id, e)}
-                            className="p-1 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded"
-                            title="Supprimer"
+                            className="p-1 text-gray-400 dark:text-gray-500 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 rounded"
+                            title={t('delete')}
                           >
                             <Trash2 className="w-3 h-3" />
                           </button>
@@ -313,7 +315,7 @@ export const TasksView: React.FC = () => {
 
                     {/* Task Description */}
                     {task.description && (
-                      <p className="text-xs text-gray-600 mb-2 line-clamp-2">
+                      <p className="text-xs text-gray-600 dark:text-gray-400 mb-2 line-clamp-2">
                         {task.description}
                       </p>
                     )}
@@ -326,14 +328,14 @@ export const TasksView: React.FC = () => {
                           className="w-2 h-2 rounded-full"
                           style={{ backgroundColor: getProjectColor(task.projectId) }}
                         />
-                        <span className="text-xs text-gray-600 truncate">
+                        <span className="text-xs text-gray-600 dark:text-gray-400 truncate">
                           {getProjectName(task.projectId)}
                         </span>
                       </div>
 
                       {/* Assignee */}
                       {task.assignee && (
-                        <div className="flex items-center gap-1.5 text-xs text-gray-600">
+                        <div className="flex items-center gap-1.5 text-xs text-gray-600 dark:text-gray-400">
                           <User className="w-3 h-3" />
                           <span className="truncate">{task.assignee}</span>
                         </div>
@@ -341,19 +343,19 @@ export const TasksView: React.FC = () => {
 
                       {/* Time Estimate */}
                       {task.estimatedHours && (
-                        <div className="flex items-center gap-1.5 text-xs text-gray-600">
+                        <div className="flex items-center gap-1.5 text-xs text-gray-600 dark:text-gray-400">
                           <Clock className="w-3 h-3" />
                           <span>{task.estimatedHours}h</span>
                           {task.actualHours && (
-                            <span className="text-gray-400">/ {task.actualHours}h</span>
+                            <span className="text-gray-400 dark:text-gray-500">/ {task.actualHours}h</span>
                           )}
                         </div>
                       )}
 
                       {/* Due Date */}
                       {task.endDate && (
-                        <div className="text-xs text-gray-500">
-                          Échéance: {new Date(task.endDate).toLocaleDateString('fr-FR')}
+                        <div className="text-xs text-gray-500 dark:text-gray-400">
+                          {t('dueDate')}: {new Date(task.endDate).toLocaleDateString()}
                         </div>
                       )}
 
@@ -366,7 +368,7 @@ export const TasksView: React.FC = () => {
                           ).map((tag, idx) => (
                             <span
                               key={idx}
-                              className="px-1.5 py-0.5 bg-gray-100 text-gray-600 text-xs rounded"
+                              className="px-1.5 py-0.5 bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 text-xs rounded"
                             >
                               {tag}
                             </span>
@@ -380,7 +382,7 @@ export const TasksView: React.FC = () => {
                 {/* Empty Column State */}
                 {tasksByStatus(status).length === 0 && (
                   <div className="text-center py-8 text-gray-400 text-sm">
-                    Aucune tâche
+                    {t('noTasks')}
                   </div>
                 )}
               </div>

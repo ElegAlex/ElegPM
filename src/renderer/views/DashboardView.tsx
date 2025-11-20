@@ -5,8 +5,10 @@ import { useTasksStore } from '../stores/tasksStore';
 import { useMilestonesStore } from '../stores/milestonesStore';
 import { useResourcesStore } from '../stores/resourcesStore';
 import { exportDashboardToPDF } from '../lib/pdfExport';
+import { useTranslation } from '../i18n/useTranslation';
 
 export const DashboardView: React.FC = () => {
+  const { t } = useTranslation();
   const { projects, fetchProjects } = useProjectsStore();
   const { tasks, fetchTasks } = useTasksStore();
   const { milestones, fetchMilestones } = useMilestonesStore();
@@ -76,7 +78,7 @@ export const DashboardView: React.FC = () => {
       await exportDashboardToPDF(dashboardRef.current);
     } catch (error) {
       console.error('Error exporting dashboard to PDF:', error);
-      alert('Erreur lors de l\'export du dashboard en PDF');
+      alert(t('exportError'));
     } finally {
       setIsExporting(false);
     }
@@ -87,87 +89,87 @@ export const DashboardView: React.FC = () => {
       {/* Welcome Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Tableau de bord</h1>
-          <p className="text-gray-600">
-            Vue d'ensemble de vos projets et activités
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">{t('dashboard')}</h1>
+          <p className="text-gray-600 dark:text-gray-400">
+            {t('dashboardOverview')}
           </p>
         </div>
         <button
           onClick={handleExportPDF}
           disabled={isExporting}
-          className="flex items-center gap-2 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-          title="Exporter en PDF"
+          className="flex items-center gap-2 px-4 py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          title={t('exportPDF')}
         >
           <FileDown className="w-5 h-5" />
-          {isExporting ? 'Export...' : 'Exporter PDF'}
+          {isExporting ? t('exporting') : t('exportPDF')}
         </button>
       </div>
 
       {/* Main Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         {/* Active Projects */}
-        <div className="bg-white rounded-lg border border-gray-200 p-6">
+        <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6">
           <div className="flex items-center justify-between mb-4">
-            <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
-              <FolderOpen className="w-6 h-6 text-blue-600" />
+            <div className="w-12 h-12 bg-blue-100 dark:bg-blue-900 rounded-lg flex items-center justify-center">
+              <FolderOpen className="w-6 h-6 text-blue-600 dark:text-blue-400" />
             </div>
             <TrendingUp className="w-5 h-5 text-green-500" />
           </div>
-          <div className="text-3xl font-bold text-gray-900 mb-1">{activeProjects}</div>
-          <div className="text-sm text-gray-600">Projets actifs</div>
-          <div className="mt-2 text-xs text-gray-500">
-            {completedProjects} terminés · {onHoldProjects} en pause
+          <div className="text-3xl font-bold text-gray-900 dark:text-white mb-1">{activeProjects}</div>
+          <div className="text-sm text-gray-600 dark:text-gray-400">{t('activeProjects')}</div>
+          <div className="mt-2 text-xs text-gray-500 dark:text-gray-400">
+            {completedProjects} {t('completedProjects')} · {onHoldProjects} {t('onHoldProjects')}
           </div>
         </div>
 
         {/* Tasks in Progress */}
-        <div className="bg-white rounded-lg border border-gray-200 p-6">
+        <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6">
           <div className="flex items-center justify-between mb-4">
-            <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
-              <CheckSquare className="w-6 h-6 text-purple-600" />
+            <div className="w-12 h-12 bg-purple-100 dark:bg-purple-900 rounded-lg flex items-center justify-center">
+              <CheckSquare className="w-6 h-6 text-purple-600 dark:text-purple-400" />
             </div>
             {blockedTasks > 0 && (
               <AlertCircle className="w-5 h-5 text-red-500" />
             )}
           </div>
-          <div className="text-3xl font-bold text-gray-900 mb-1">{inProgressTasks}</div>
-          <div className="text-sm text-gray-600">Tâches en cours</div>
-          <div className="mt-2 text-xs text-gray-500">
-            {todoTasks} à faire · {doneTasks} terminées
-            {blockedTasks > 0 && ` · ${blockedTasks} bloquées`}
+          <div className="text-3xl font-bold text-gray-900 dark:text-white mb-1">{inProgressTasks}</div>
+          <div className="text-sm text-gray-600 dark:text-gray-400">{t('tasksInProgress')}</div>
+          <div className="mt-2 text-xs text-gray-500 dark:text-gray-400">
+            {todoTasks} {t('todoTasks')} · {doneTasks} {t('completedTasks')}
+            {blockedTasks > 0 && ` · ${blockedTasks} ${t('blockedTasks')}`}
           </div>
         </div>
 
         {/* Upcoming Milestones */}
-        <div className="bg-white rounded-lg border border-gray-200 p-6">
+        <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6">
           <div className="flex items-center justify-between mb-4">
-            <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
-              <Flag className="w-6 h-6 text-green-600" />
+            <div className="w-12 h-12 bg-green-100 dark:bg-green-900 rounded-lg flex items-center justify-center">
+              <Flag className="w-6 h-6 text-green-600 dark:text-green-400" />
             </div>
             {overdueMilestones.length > 0 && (
               <AlertCircle className="w-5 h-5 text-red-500" />
             )}
           </div>
-          <div className="text-3xl font-bold text-gray-900 mb-1">{upcomingMilestones.length}</div>
-          <div className="text-sm text-gray-600">Jalons à venir (30j)</div>
+          <div className="text-3xl font-bold text-gray-900 dark:text-white mb-1">{upcomingMilestones.length}</div>
+          <div className="text-sm text-gray-600 dark:text-gray-400">{t('upcomingMilestones')}</div>
           {overdueMilestones.length > 0 && (
-            <div className="mt-2 text-xs text-red-600 font-medium">
-              {overdueMilestones.length} en retard
+            <div className="mt-2 text-xs text-red-600 dark:text-red-400 font-medium">
+              {overdueMilestones.length} {t('overdueCount')}
             </div>
           )}
         </div>
 
         {/* Available Resources */}
-        <div className="bg-white rounded-lg border border-gray-200 p-6">
+        <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6">
           <div className="flex items-center justify-between mb-4">
-            <div className="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center">
-              <Users className="w-6 h-6 text-orange-600" />
+            <div className="w-12 h-12 bg-orange-100 dark:bg-orange-900 rounded-lg flex items-center justify-center">
+              <Users className="w-6 h-6 text-orange-600 dark:text-orange-400" />
             </div>
           </div>
-          <div className="text-3xl font-bold text-gray-900 mb-1">{availableResources}</div>
-          <div className="text-sm text-gray-600">Ressources disponibles</div>
-          <div className="mt-2 text-xs text-gray-500">
-            Disponibilité moyenne: {avgAvailability}%
+          <div className="text-3xl font-bold text-gray-900 dark:text-white mb-1">{availableResources}</div>
+          <div className="text-sm text-gray-600 dark:text-gray-400">{t('availableResources')}</div>
+          <div className="mt-2 text-xs text-gray-500 dark:text-gray-400">
+            {t('avgAvailability')}: {avgAvailability}%
           </div>
         </div>
       </div>
@@ -175,21 +177,21 @@ export const DashboardView: React.FC = () => {
       {/* Projects and Tasks Progress */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Projects by Status */}
-        <div className="bg-white rounded-lg border border-gray-200 p-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Projets par statut</h3>
+        <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6">
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">{t('projectsByStatus')}</h3>
           <div className="space-y-4">
             {projects.length === 0 ? (
-              <p className="text-sm text-gray-500 text-center py-4">Aucun projet</p>
+              <p className="text-sm text-gray-500 dark:text-gray-400 text-center py-4">{t('noProjects')}</p>
             ) : (
               <>
                 <div>
                   <div className="flex items-center justify-between mb-2">
-                    <span className="text-sm text-gray-600">En cours</span>
-                    <span className="text-sm font-medium text-gray-900">{activeProjects}</span>
+                    <span className="text-sm text-gray-600 dark:text-gray-400">{t('statusInProgress')}</span>
+                    <span className="text-sm font-medium text-gray-900 dark:text-white">{activeProjects}</span>
                   </div>
-                  <div className="w-full bg-gray-200 rounded-full h-2">
+                  <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
                     <div
-                      className="bg-blue-600 h-2 rounded-full"
+                      className="bg-blue-600 dark:bg-blue-500 h-2 rounded-full"
                       style={{ width: `${projects.length > 0 ? (activeProjects / projects.length) * 100 : 0}%` }}
                     />
                   </div>
@@ -197,12 +199,12 @@ export const DashboardView: React.FC = () => {
 
                 <div>
                   <div className="flex items-center justify-between mb-2">
-                    <span className="text-sm text-gray-600">Terminés</span>
-                    <span className="text-sm font-medium text-gray-900">{completedProjects}</span>
+                    <span className="text-sm text-gray-600 dark:text-gray-400">{t('statusCompleted')}</span>
+                    <span className="text-sm font-medium text-gray-900 dark:text-white">{completedProjects}</span>
                   </div>
-                  <div className="w-full bg-gray-200 rounded-full h-2">
+                  <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
                     <div
-                      className="bg-green-600 h-2 rounded-full"
+                      className="bg-green-600 dark:bg-green-500 h-2 rounded-full"
                       style={{ width: `${projects.length > 0 ? (completedProjects / projects.length) * 100 : 0}%` }}
                     />
                   </div>
@@ -211,26 +213,26 @@ export const DashboardView: React.FC = () => {
                 {onHoldProjects > 0 && (
                   <div>
                     <div className="flex items-center justify-between mb-2">
-                      <span className="text-sm text-gray-600">En pause</span>
-                      <span className="text-sm font-medium text-gray-900">{onHoldProjects}</span>
+                      <span className="text-sm text-gray-600 dark:text-gray-400">{t('onHold')}</span>
+                      <span className="text-sm font-medium text-gray-900 dark:text-white">{onHoldProjects}</span>
                     </div>
-                    <div className="w-full bg-gray-200 rounded-full h-2">
+                    <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
                       <div
-                        className="bg-yellow-600 h-2 rounded-full"
+                        className="bg-yellow-600 dark:bg-yellow-500 h-2 rounded-full"
                         style={{ width: `${projects.length > 0 ? (onHoldProjects / projects.length) * 100 : 0}%` }}
                       />
                     </div>
                   </div>
                 )}
 
-                <div className="pt-4 border-t border-gray-200">
+                <div className="pt-4 border-t border-gray-200 dark:border-gray-700">
                   <div className="flex items-center justify-between">
-                    <span className="text-sm font-medium text-gray-700">Progression globale</span>
-                    <span className="text-lg font-bold text-blue-600">{totalProgress}%</span>
+                    <span className="text-sm font-medium text-gray-700 dark:text-gray-300">{t('overallProgress')}</span>
+                    <span className="text-lg font-bold text-blue-600 dark:text-blue-400">{totalProgress}%</span>
                   </div>
-                  <div className="w-full bg-gray-200 rounded-full h-3 mt-2">
+                  <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-3 mt-2">
                     <div
-                      className="bg-blue-600 h-3 rounded-full"
+                      className="bg-blue-600 dark:bg-blue-500 h-3 rounded-full"
                       style={{ width: `${totalProgress}%` }}
                     />
                   </div>
@@ -241,21 +243,21 @@ export const DashboardView: React.FC = () => {
         </div>
 
         {/* Tasks by Status */}
-        <div className="bg-white rounded-lg border border-gray-200 p-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Tâches par statut</h3>
+        <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6">
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">{t('tasksByStatus')}</h3>
           <div className="space-y-4">
             {tasks.length === 0 ? (
-              <p className="text-sm text-gray-500 text-center py-4">Aucune tâche</p>
+              <p className="text-sm text-gray-500 dark:text-gray-400 text-center py-4">{t('noTasks')}</p>
             ) : (
               <>
                 <div>
                   <div className="flex items-center justify-between mb-2">
-                    <span className="text-sm text-gray-600">À faire</span>
-                    <span className="text-sm font-medium text-gray-900">{todoTasks}</span>
+                    <span className="text-sm text-gray-600 dark:text-gray-400">{t('statusTodo')}</span>
+                    <span className="text-sm font-medium text-gray-900 dark:text-white">{todoTasks}</span>
                   </div>
-                  <div className="w-full bg-gray-200 rounded-full h-2">
+                  <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
                     <div
-                      className="bg-gray-600 h-2 rounded-full"
+                      className="bg-gray-600 dark:bg-gray-500 h-2 rounded-full"
                       style={{ width: `${tasks.length > 0 ? (todoTasks / tasks.length) * 100 : 0}%` }}
                     />
                   </div>
@@ -263,12 +265,12 @@ export const DashboardView: React.FC = () => {
 
                 <div>
                   <div className="flex items-center justify-between mb-2">
-                    <span className="text-sm text-gray-600">En cours</span>
-                    <span className="text-sm font-medium text-gray-900">{inProgressTasks}</span>
+                    <span className="text-sm text-gray-600 dark:text-gray-400">{t('statusInProgress')}</span>
+                    <span className="text-sm font-medium text-gray-900 dark:text-white">{inProgressTasks}</span>
                   </div>
-                  <div className="w-full bg-gray-200 rounded-full h-2">
+                  <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
                     <div
-                      className="bg-blue-600 h-2 rounded-full"
+                      className="bg-blue-600 dark:bg-blue-500 h-2 rounded-full"
                       style={{ width: `${tasks.length > 0 ? (inProgressTasks / tasks.length) * 100 : 0}%` }}
                     />
                   </div>
@@ -276,12 +278,12 @@ export const DashboardView: React.FC = () => {
 
                 <div>
                   <div className="flex items-center justify-between mb-2">
-                    <span className="text-sm text-gray-600">Terminées</span>
-                    <span className="text-sm font-medium text-gray-900">{doneTasks}</span>
+                    <span className="text-sm text-gray-600 dark:text-gray-400">{t('statusDone')}</span>
+                    <span className="text-sm font-medium text-gray-900 dark:text-white">{doneTasks}</span>
                   </div>
-                  <div className="w-full bg-gray-200 rounded-full h-2">
+                  <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
                     <div
-                      className="bg-green-600 h-2 rounded-full"
+                      className="bg-green-600 dark:bg-green-500 h-2 rounded-full"
                       style={{ width: `${tasks.length > 0 ? (doneTasks / tasks.length) * 100 : 0}%` }}
                     />
                   </div>
@@ -290,12 +292,12 @@ export const DashboardView: React.FC = () => {
                 {blockedTasks > 0 && (
                   <div>
                     <div className="flex items-center justify-between mb-2">
-                      <span className="text-sm text-gray-600">Bloquées</span>
-                      <span className="text-sm font-medium text-red-600">{blockedTasks}</span>
+                      <span className="text-sm text-gray-600 dark:text-gray-400">{t('statusBlocked')}</span>
+                      <span className="text-sm font-medium text-red-600 dark:text-red-400">{blockedTasks}</span>
                     </div>
-                    <div className="w-full bg-gray-200 rounded-full h-2">
+                    <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
                       <div
-                        className="bg-red-600 h-2 rounded-full"
+                        className="bg-red-600 dark:bg-red-500 h-2 rounded-full"
                         style={{ width: `${tasks.length > 0 ? (blockedTasks / tasks.length) * 100 : 0}%` }}
                       />
                     </div>
@@ -309,16 +311,16 @@ export const DashboardView: React.FC = () => {
 
       {/* Active Projects List */}
       {activeProjectsList.length > 0 && (
-        <div className="bg-white rounded-lg border border-gray-200 p-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+        <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6">
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
             <FolderOpen className="w-5 h-5" />
-            Projets actifs
+            {t('activeProjects')}
           </h3>
           <div className="space-y-4">
             {activeProjectsList.slice(0, 5).map(project => (
               <div
                 key={project.id}
-                className="py-3 border-b border-gray-100 last:border-0"
+                className="py-3 border-b border-gray-100 dark:border-gray-700 last:border-0"
               >
                 <div className="flex items-start justify-between mb-2">
                   <div className="flex items-center gap-3 flex-1">
@@ -327,9 +329,9 @@ export const DashboardView: React.FC = () => {
                       style={{ backgroundColor: project.color }}
                     />
                     <div className="flex-1 min-w-0">
-                      <div className="font-medium text-gray-900">{project.name}</div>
+                      <div className="font-medium text-gray-900 dark:text-white">{project.name}</div>
                       {(project.startDate || project.endDate) && (
-                        <div className="flex items-center gap-2 text-sm text-gray-500 mt-1">
+                        <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400 mt-1">
                           <Calendar className="w-3.5 h-3.5" />
                           {project.startDate && (
                             <span>
@@ -355,13 +357,13 @@ export const DashboardView: React.FC = () => {
                     </div>
                   </div>
                   <div className="flex items-center gap-3 ml-4">
-                    <span className="text-sm font-semibold text-blue-600 whitespace-nowrap">
+                    <span className="text-sm font-semibold text-blue-600 dark:text-blue-400 whitespace-nowrap">
                       {project.progress}%
                     </span>
                   </div>
                 </div>
                 {/* Progress bar */}
-                <div className="w-full bg-gray-200 rounded-full h-2 mt-2">
+                <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2 mt-2">
                   <div
                     className="h-2 rounded-full transition-all"
                     style={{
@@ -378,16 +380,16 @@ export const DashboardView: React.FC = () => {
 
       {/* Upcoming Milestones List */}
       {upcomingMilestones.length > 0 && (
-        <div className="bg-white rounded-lg border border-gray-200 p-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+        <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6">
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
             <Calendar className="w-5 h-5" />
-            Jalons à venir (30 prochains jours)
+            {t('upcomingMilestonesNext30Days')}
           </h3>
           <div className="space-y-3">
             {upcomingMilestones.slice(0, 5).map(milestone => (
               <div
                 key={milestone.id}
-                className="flex items-center justify-between py-2 border-b border-gray-100 last:border-0"
+                className="flex items-center justify-between py-2 border-b border-gray-100 dark:border-gray-700 last:border-0"
               >
                 <div className="flex items-center gap-3">
                   <div
@@ -395,13 +397,13 @@ export const DashboardView: React.FC = () => {
                     style={{ backgroundColor: milestone.color }}
                   />
                   <div>
-                    <div className="font-medium text-gray-900">{milestone.name}</div>
+                    <div className="font-medium text-gray-900 dark:text-white">{milestone.name}</div>
                     {milestone.description && (
-                      <div className="text-sm text-gray-500 line-clamp-1">{milestone.description}</div>
+                      <div className="text-sm text-gray-500 dark:text-gray-400 line-clamp-1">{milestone.description}</div>
                     )}
                   </div>
                 </div>
-                <div className="text-sm text-gray-600">
+                <div className="text-sm text-gray-600 dark:text-gray-400">
                   {new Date(milestone.targetDate).toLocaleDateString('fr-FR', {
                     day: 'numeric',
                     month: 'short'

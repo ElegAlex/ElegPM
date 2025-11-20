@@ -4,6 +4,7 @@ import { useProjectsStore } from '../stores/projectsStore';
 import { useTasksStore } from '../stores/tasksStore';
 import { useMilestonesStore } from '../stores/milestonesStore';
 import { useResourcesStore } from '../stores/resourcesStore';
+import { useTranslation } from '../i18n/useTranslation';
 import { useTaskAssignmentsStore } from '../stores/taskAssignmentsStore';
 import { ProjectForm } from '../components/ProjectForm';
 import { TaskForm } from '../components/TaskForm';
@@ -52,6 +53,7 @@ const milestoneStatusConfig = {
 };
 
 export const ProjectDetailView: React.FC<ProjectDetailViewProps> = ({ projectId, onBack }) => {
+  const { t } = useTranslation();
   const { projects, fetchProjects, deleteProject } = useProjectsStore();
   const { tasks, fetchTasks, updateTask, deleteTask } = useTasksStore();
   const { milestones, fetchMilestones, deleteMilestone } = useMilestonesStore();
@@ -139,13 +141,13 @@ export const ProjectDetailView: React.FC<ProjectDetailViewProps> = ({ projectId,
   if (!project) {
     return (
       <div className="flex flex-col items-center justify-center h-full">
-        <p className="text-gray-500 mb-4">Projet non trouvé</p>
+        <p className="text-gray-500 mb-4">{t('projectNotFound')}</p>
         <button
           onClick={onBack}
           className="flex items-center gap-2 px-4 py-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
         >
           <ArrowLeft className="w-4 h-4" />
-          Retour aux projets
+          {t('backToProjects')}
         </button>
       </div>
     );
@@ -255,7 +257,7 @@ export const ProjectDetailView: React.FC<ProjectDetailViewProps> = ({ projectId,
   const projectResources = resources.filter(r => projectResourceIds.has(r.id));
 
   const handleDeleteProject = async () => {
-    if (confirm(`Êtes-vous sûr de vouloir supprimer le projet "${project.name}" ? Toutes les tâches et jalons associés seront également supprimés.`)) {
+    if (confirm(`${t('confirmDeleteProject')} "${project.name}" ? ${t('allTasksAndMilestonesWillBeDeleted')}`)) {
       try {
         await deleteProject(project.id);
         onBack();
@@ -271,7 +273,7 @@ export const ProjectDetailView: React.FC<ProjectDetailViewProps> = ({ projectId,
   };
 
   const handleDeleteTask = async (taskId: string) => {
-    if (confirm('Êtes-vous sûr de vouloir supprimer cette tâche ?')) {
+    if (confirm(t('confirmDeleteTask'))) {
       try {
         await window.api.tasks.delete(taskId);
         await fetchTasks();
@@ -287,7 +289,7 @@ export const ProjectDetailView: React.FC<ProjectDetailViewProps> = ({ projectId,
   };
 
   const handleDeleteMilestone = async (milestoneId: string) => {
-    if (confirm('Êtes-vous sûr de vouloir supprimer ce jalon ?')) {
+    if (confirm(t('confirmDeleteMilestone'))) {
       try {
         await window.api.milestones.delete(milestoneId);
         await fetchMilestones();
@@ -464,8 +466,8 @@ export const ProjectDetailView: React.FC<ProjectDetailViewProps> = ({ projectId,
         structure.push({
           type: 'deliverable',
           id: 'unassigned',
-          name: 'Travaux non assignés à un livrable',
-          description: 'Tâches qui doivent être associées à un livrable',
+          name: t('unassignedWork'),
+          description: t('tasksMustBeAssignedToDeliverable'),
           wbsCode: `${structure.length + 1}.0`,
           tasks: unassignedTasks,
           stats: {
@@ -482,10 +484,10 @@ export const ProjectDetailView: React.FC<ProjectDetailViewProps> = ({ projectId,
       // View by phases (use project timeline)
       // For simplicity, group by status for now
       const phases = [
-        { phase: 'Planification', statuses: ['todo'] },
-        { phase: 'Exécution', statuses: ['in_progress'] },
-        { phase: 'Contrôle', statuses: ['review'] },
-        { phase: 'Clôture', statuses: ['done'] },
+        { phase: t('planning'), statuses: ['todo'] },
+        { phase: t('execution'), statuses: ['in_progress'] },
+        { phase: t('control'), statuses: ['review'] },
+        { phase: t('closure'), statuses: ['done'] },
       ];
 
       return phases.map((phaseInfo, idx) => {
@@ -517,27 +519,27 @@ export const ProjectDetailView: React.FC<ProjectDetailViewProps> = ({ projectId,
     return (
       <React.Fragment key={task.id}>
         <div
-          className="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-sm transition-shadow mb-2"
+          className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-4 hover:shadow-sm transition-shadow mb-2"
           style={{ marginLeft: `${depth * 24}px` }}
         >
           <div className="flex items-start gap-3">
             {/* Expand/Collapse button */}
             <button
               onClick={() => hasChildren && toggleWbsNode(task.id)}
-              className={`flex-shrink-0 w-6 h-6 flex items-center justify-center rounded hover:bg-gray-100 transition-colors ${!hasChildren ? 'invisible' : ''}`}
+              className={`flex-shrink-0 w-6 h-6 flex items-center justify-center rounded hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors ${!hasChildren ? 'invisible' : ''}`}
             >
-              {hasChildren && (isExpanded ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />)}
+              {hasChildren && (isExpanded ? <ChevronDown className="w-4 h-4 dark:text-gray-400" /> : <ChevronRight className="w-4 h-4 dark:text-gray-400" />)}
             </button>
 
             {/* WBS Code */}
             <div className="flex-shrink-0 w-16">
-              <span className="text-sm font-mono font-semibold text-gray-700">{wbsCode}</span>
+              <span className="text-sm font-mono font-semibold text-gray-700 dark:text-gray-300">{wbsCode}</span>
             </div>
 
             {/* Task info */}
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2 mb-2">
-                <h4 className="font-semibold text-gray-900">{task.title}</h4>
+                <h4 className="font-semibold text-gray-900 dark:text-white">{task.title}</h4>
                 <span className={`px-2 py-0.5 rounded-full text-xs ${taskStatusConfig[task.status].color}`}>
                   {taskStatusConfig[task.status].label}
                 </span>
@@ -547,13 +549,13 @@ export const ProjectDetailView: React.FC<ProjectDetailViewProps> = ({ projectId,
               </div>
 
               {task.description && (
-                <p className="text-sm text-gray-600 mb-2">{task.description}</p>
+                <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">{task.description}</p>
               )}
 
               {taskTags.length > 0 && (
                 <div className="flex flex-wrap gap-1 mb-2">
                   {taskTags.map((tag, idx) => (
-                    <span key={idx} className="inline-flex items-center gap-1 px-2 py-0.5 bg-blue-100 text-blue-700 text-xs rounded-full">
+                    <span key={idx} className="inline-flex items-center gap-1 px-2 py-0.5 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 text-xs rounded-full">
                       <Tag className="w-3 h-3" />
                       {tag}
                     </span>
@@ -561,7 +563,7 @@ export const ProjectDetailView: React.FC<ProjectDetailViewProps> = ({ projectId,
                 </div>
               )}
 
-              <div className="flex items-center gap-4 text-sm text-gray-600">
+              <div className="flex items-center gap-4 text-sm text-gray-600 dark:text-gray-400">
                 {task.startDate && task.endDate && (
                   <div className="flex items-center gap-1">
                     <Calendar className="w-4 h-4" />
@@ -581,18 +583,18 @@ export const ProjectDetailView: React.FC<ProjectDetailViewProps> = ({ projectId,
 
             {/* Statistics */}
             <div className="flex-shrink-0 text-right">
-              <div className="text-sm font-semibold text-gray-900 mb-1">{stats.totalHours}h</div>
-              <div className="text-xs text-gray-500 mb-2">
+              <div className="text-sm font-semibold text-gray-900 dark:text-white mb-1">{stats.totalHours}h</div>
+              <div className="text-xs text-gray-500 dark:text-gray-400 mb-2">
                 {stats.completedHours}h / {stats.totalHours}h
               </div>
               <div className="w-24">
-                <div className="w-full bg-gray-200 rounded-full h-2">
+                <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
                   <div
-                    className="bg-green-500 h-2 rounded-full transition-all"
+                    className="bg-green-500 dark:bg-green-600 h-2 rounded-full transition-all"
                     style={{ width: `${stats.progress}%` }}
                   />
                 </div>
-                <div className="text-xs text-gray-600 mt-1 text-center">{stats.progress}%</div>
+                <div className="text-xs text-gray-600 dark:text-gray-400 mt-1 text-center">{stats.progress}%</div>
               </div>
             </div>
           </div>
@@ -614,7 +616,7 @@ export const ProjectDetailView: React.FC<ProjectDetailViewProps> = ({ projectId,
     return (
       <React.Fragment key={task.id}>
         <div
-          className="bg-white border border-gray-200 rounded-lg p-3 hover:shadow-md transition-shadow"
+          className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-3 hover:shadow-md transition-shadow"
           style={{
             marginLeft: `${marginLeft}px`,
             display: 'grid',
@@ -630,24 +632,24 @@ export const ProjectDetailView: React.FC<ProjectDetailViewProps> = ({ projectId,
           >
             <div className="flex items-center gap-2">
               {depth > 0 && (
-                <span className="text-gray-400 text-xs flex-shrink-0">└─</span>
+                <span className="text-gray-400 dark:text-gray-500 text-xs flex-shrink-0">└─</span>
               )}
-              <h3 className="font-medium text-gray-900 truncate">{task.title}</h3>
+              <h3 className="font-medium text-gray-900 dark:text-white truncate">{task.title}</h3>
               {hasChildren && (
-                <span className="text-xs text-gray-500 bg-gray-100 px-2 py-0.5 rounded-full flex-shrink-0">
-                  {task.children.length} sous-tâche{task.children.length > 1 ? 's' : ''}
+                <span className="text-xs text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-700 px-2 py-0.5 rounded-full flex-shrink-0">
+                  {task.children.length} {task.children.length > 1 ? t('subtasks') : t('subtask')}
                 </span>
               )}
             </div>
             {task.description && (
-              <p className="text-xs text-gray-500 truncate mt-1">{task.description}</p>
+              <p className="text-xs text-gray-500 dark:text-gray-400 truncate mt-1">{task.description}</p>
             )}
             {taskTags.length > 0 && (
               <div className="flex flex-wrap gap-1 mt-2">
                 {taskTags.map((tag, idx) => (
                   <span
                     key={idx}
-                    className="inline-flex items-center gap-1 px-2 py-0.5 bg-blue-100 text-blue-700 text-xs rounded-full"
+                    className="inline-flex items-center gap-1 px-2 py-0.5 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 text-xs rounded-full"
                   >
                     <Tag className="w-3 h-3" />
                     {tag}
@@ -692,9 +694,9 @@ export const ProjectDetailView: React.FC<ProjectDetailViewProps> = ({ projectId,
               }}
               onClick={(e) => e.stopPropagation()}
               placeholder="Début"
-              className="px-2 py-1 border border-gray-300 rounded text-xs w-32 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="px-2 py-1 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded text-xs w-32 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             />
-            <span className="text-gray-400 text-xs">→</span>
+            <span className="text-gray-400 dark:text-gray-500 text-xs">→</span>
             <input
               type="date"
               value={task.endDate || ''}
@@ -704,12 +706,12 @@ export const ProjectDetailView: React.FC<ProjectDetailViewProps> = ({ projectId,
               }}
               onClick={(e) => e.stopPropagation()}
               placeholder="Fin"
-              className="px-2 py-1 border border-gray-300 rounded text-xs w-32 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="px-2 py-1 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded text-xs w-32 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             />
           </div>
 
           {/* Extra info (fixed width) */}
-          <div className="flex items-center gap-2 text-xs text-gray-500" style={{ width: '120px' }}>
+          <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400" style={{ width: '120px' }}>
             {task.estimatedHours && (
               <span>{task.estimatedHours}h</span>
             )}
@@ -728,8 +730,8 @@ export const ProjectDetailView: React.FC<ProjectDetailViewProps> = ({ projectId,
                 e.stopPropagation();
                 handleAddSubtask(task.id);
               }}
-              className="p-1.5 text-gray-400 hover:text-green-600 hover:bg-green-50 rounded transition-colors"
-              title="Ajouter une sous-tâche"
+              className="p-1.5 text-gray-400 dark:text-gray-500 hover:text-green-600 dark:hover:text-green-400 hover:bg-green-50 dark:hover:bg-green-900/30 rounded transition-colors"
+              title={t('addSubtask')}
             >
               <Plus className="w-4 h-4" />
             </button>
@@ -738,7 +740,7 @@ export const ProjectDetailView: React.FC<ProjectDetailViewProps> = ({ projectId,
                 e.stopPropagation();
                 handleEditTask(task);
               }}
-              className="p-1.5 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded transition-colors"
+              className="p-1.5 text-gray-400 dark:text-gray-500 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded transition-colors"
             >
               <Edit2 className="w-4 h-4" />
             </button>
@@ -747,7 +749,7 @@ export const ProjectDetailView: React.FC<ProjectDetailViewProps> = ({ projectId,
                 e.stopPropagation();
                 handleDeleteTask(task.id);
               }}
-              className="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded transition-colors"
+              className="p-1.5 text-gray-400 dark:text-gray-500 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 rounded transition-colors"
             >
               <Trash2 className="w-4 h-4" />
             </button>
@@ -761,14 +763,14 @@ export const ProjectDetailView: React.FC<ProjectDetailViewProps> = ({ projectId,
   return (
     <div className="h-full flex flex-col">
       {/* Header */}
-      <div className="bg-white border-b border-gray-200 px-6 py-4">
+      <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-6 py-4">
         <div className="flex items-center justify-between mb-4">
           <button
             onClick={onBack}
-            className="flex items-center gap-2 px-3 py-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
+            className="flex items-center gap-2 px-3 py-2 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
           >
             <ArrowLeft className="w-4 h-4" />
-            Retour aux projets
+            {t('backToProjects')}
           </button>
           <div className="flex items-center gap-2">
             <button
@@ -776,14 +778,14 @@ export const ProjectDetailView: React.FC<ProjectDetailViewProps> = ({ projectId,
               className="flex items-center gap-2 px-4 py-2 text-blue-600 border border-blue-600 rounded-lg hover:bg-blue-50 transition-colors"
             >
               <Edit2 className="w-4 h-4" />
-              Modifier
+              {t('edit')}
             </button>
             <button
               onClick={handleDeleteProject}
               className="flex items-center gap-2 px-4 py-2 text-red-600 border border-red-600 rounded-lg hover:bg-red-50 transition-colors"
             >
               <Trash2 className="w-4 h-4" />
-              Supprimer
+              {t('delete')}
             </button>
           </div>
         </div>
@@ -799,7 +801,7 @@ export const ProjectDetailView: React.FC<ProjectDetailViewProps> = ({ projectId,
             </span>
           </div>
           <div className="flex-1">
-            <h1 className="text-2xl font-bold text-gray-900 mb-2">{project.name}</h1>
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">{project.name}</h1>
             {project.description && (
               <p className="text-gray-600 mb-3">{project.description}</p>
             )}
@@ -808,7 +810,7 @@ export const ProjectDetailView: React.FC<ProjectDetailViewProps> = ({ projectId,
                 {statusConfig[project.status].label}
               </span>
               <span className={`font-medium ${priorityConfig[project.priority].color}`}>
-                Priorité: {priorityConfig[project.priority].label}
+                {t('priority')}: {priorityConfig[project.priority].label}
               </span>
               {project.startDate && (
                 <span className="text-gray-600 flex items-center gap-1">
@@ -820,8 +822,8 @@ export const ProjectDetailView: React.FC<ProjectDetailViewProps> = ({ projectId,
             </div>
           </div>
           <div className="text-right">
-            <div className="text-sm text-gray-600 mb-1">Progression</div>
-            <div className="text-3xl font-bold text-gray-900">{projectStats.completionRate}%</div>
+            <div className="text-sm text-gray-600 mb-1">{t('progress')}</div>
+            <div className="text-3xl font-bold text-gray-900 dark:text-white">{projectStats.completionRate}%</div>
           </div>
         </div>
 
@@ -837,73 +839,73 @@ export const ProjectDetailView: React.FC<ProjectDetailViewProps> = ({ projectId,
       </div>
 
       {/* Tabs */}
-      <div className="bg-white border-b border-gray-200 px-6">
+      <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-6">
         <div className="flex gap-4">
           <button
             onClick={() => setActiveTab('tasks')}
             className={`flex items-center gap-2 px-4 py-3 border-b-2 transition-colors ${
               activeTab === 'tasks'
                 ? 'border-blue-600 text-blue-600 font-medium'
-                : 'border-transparent text-gray-600 hover:text-gray-900'
+                : 'border-transparent text-gray-600 hover:text-gray-900 dark:hover:text-white'
             }`}
           >
             <ListTodo className="w-4 h-4" />
-            Tâches ({projectTasks.length})
+            {t('tasks')} ({projectTasks.length})
           </button>
           <button
             onClick={() => setActiveTab('milestones')}
             className={`flex items-center gap-2 px-4 py-3 border-b-2 transition-colors ${
               activeTab === 'milestones'
                 ? 'border-blue-600 text-blue-600 font-medium'
-                : 'border-transparent text-gray-600 hover:text-gray-900'
+                : 'border-transparent text-gray-600 hover:text-gray-900 dark:hover:text-white'
             }`}
           >
             <Flag className="w-4 h-4" />
-            Jalons ({projectMilestones.length})
+            {t('milestones')} ({projectMilestones.length})
           </button>
           <button
             onClick={() => setActiveTab('gantt')}
             className={`flex items-center gap-2 px-4 py-3 border-b-2 transition-colors ${
               activeTab === 'gantt'
                 ? 'border-blue-600 text-blue-600 font-medium'
-                : 'border-transparent text-gray-600 hover:text-gray-900'
+                : 'border-transparent text-gray-600 hover:text-gray-900 dark:hover:text-white'
             }`}
           >
             <GanttChart className="w-4 h-4" />
-            Gantt
+            {t('gantt')}
           </button>
           <button
             onClick={() => setActiveTab('wbs')}
             className={`flex items-center gap-2 px-4 py-3 border-b-2 transition-colors ${
               activeTab === 'wbs'
                 ? 'border-blue-600 text-blue-600 font-medium'
-                : 'border-transparent text-gray-600 hover:text-gray-900'
+                : 'border-transparent text-gray-600 hover:text-gray-900 dark:hover:text-white'
             }`}
           >
             <Network className="w-4 h-4" />
-            WBS
+            {t('wbs')}
           </button>
           <button
             onClick={() => setActiveTab('resources')}
             className={`flex items-center gap-2 px-4 py-3 border-b-2 transition-colors ${
               activeTab === 'resources'
                 ? 'border-blue-600 text-blue-600 font-medium'
-                : 'border-transparent text-gray-600 hover:text-gray-900'
+                : 'border-transparent text-gray-600 hover:text-gray-900 dark:hover:text-white'
             }`}
           >
             <Users className="w-4 h-4" />
-            Ressources ({projectResources.length})
+            {t('resources')} ({projectResources.length})
           </button>
           <button
             onClick={() => setActiveTab('activity')}
             className={`flex items-center gap-2 px-4 py-3 border-b-2 transition-colors ${
               activeTab === 'activity'
                 ? 'border-blue-600 text-blue-600 font-medium'
-                : 'border-transparent text-gray-600 hover:text-gray-900'
+                : 'border-transparent text-gray-600 hover:text-gray-900 dark:hover:text-white'
             }`}
           >
             <Activity className="w-4 h-4" />
-            Activité
+            {t('activity')}
           </button>
         </div>
       </div>
@@ -915,67 +917,67 @@ export const ProjectDetailView: React.FC<ProjectDetailViewProps> = ({ projectId,
           <div>
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-3">
-                <h2 className="text-lg font-semibold text-gray-900">Tâches du projet</h2>
+                <h2 className="text-lg font-semibold text-gray-900 dark:text-white">{t('tasksOfProject')}</h2>
                 {/* View Mode Toggle */}
-                <div className="flex items-center gap-1 bg-gray-100 rounded-lg p-1">
+                <div className="flex items-center gap-1 bg-gray-100 dark:bg-gray-800 rounded-lg p-1">
                   <button
                     onClick={() => setTaskViewMode('table')}
                     className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded transition-colors ${
                       taskViewMode === 'table'
-                        ? 'bg-white text-gray-900 shadow-sm'
-                        : 'text-gray-600 hover:text-gray-900'
+                        ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 shadow-sm'
+                        : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200'
                     }`}
-                    title="Vue tableau"
+                    title={t('tableView')}
                   >
                     <List className="w-3.5 h-3.5" />
-                    Tableau
+                    {t('tableView')}
                   </button>
                   <button
                     onClick={() => setTaskViewMode('kanban')}
                     className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded transition-colors ${
                       taskViewMode === 'kanban'
-                        ? 'bg-white text-gray-900 shadow-sm'
-                        : 'text-gray-600 hover:text-gray-900'
+                        ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 shadow-sm'
+                        : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200'
                     }`}
-                    title="Vue Kanban"
+                    title={t('kanbanView')}
                   >
                     <LayoutGrid className="w-3.5 h-3.5" />
-                    Kanban
+                    {t('kanbanView')}
                   </button>
                 </div>
               </div>
               <div className="flex items-center gap-2">
                 <button
                   onClick={() => setShowTasksImport(true)}
-                  className="flex items-center gap-2 px-4 py-2 bg-white text-blue-600 border border-blue-600 rounded-lg hover:bg-blue-50 transition-colors"
+                  className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-gray-800 text-blue-600 border border-blue-600 dark:border-blue-500 rounded-lg hover:bg-blue-50 dark:hover:bg-blue-900 transition-colors"
                 >
                   <Upload className="w-4 h-4" />
-                  Importer
+                  {t('import')}
                 </button>
                 <button
                   onClick={() => {
                     setEditingTask(null);
                     setShowTaskForm(true);
                   }}
-                  className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                  className="flex items-center gap-2 px-4 py-2 bg-blue-600 dark:bg-blue-700 text-white rounded-lg hover:bg-blue-700 dark:hover:bg-blue-800 transition-colors"
                 >
                   <Plus className="w-4 h-4" />
-                  Nouvelle tâche
+                  {t('newTask')}
                 </button>
               </div>
             </div>
 
             {/* Tag Filter Section */}
-            <div className="mb-4 p-3 bg-gray-50 rounded-lg border border-gray-200">
+            <div className="mb-4 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
                 <div className="flex items-center gap-2 mb-2">
-                  <Tag className="w-4 h-4 text-gray-600" />
-                  <span className="text-sm font-medium text-gray-700">Filtrer par tags:</span>
+                  <Tag className="w-4 h-4 text-gray-600 dark:text-gray-400" />
+                  <span className="text-sm font-medium text-gray-700 dark:text-gray-300">{t('filterByTags')}:</span>
                   {selectedTags.length > 0 && (
                     <button
                       onClick={() => setSelectedTags([])}
                       className="text-xs text-blue-600 hover:text-blue-800 ml-auto"
                     >
-                      Réinitialiser
+                      {t('reset')}
                     </button>
                   )}
                 </div>
@@ -995,7 +997,7 @@ export const ProjectDetailView: React.FC<ProjectDetailViewProps> = ({ projectId,
                         className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-sm transition-all ${
                           isSelected
                             ? 'bg-blue-500 text-white shadow-sm'
-                            : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-100'
+                            : 'bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-600'
                         }`}
                       >
                         <Tag className="w-3 h-3" />
@@ -1007,36 +1009,36 @@ export const ProjectDetailView: React.FC<ProjectDetailViewProps> = ({ projectId,
                 </div>
                 {selectedTags.length > 0 && (
                   <div className="mt-2 text-xs text-gray-600">
-                    {filteredProjectTasks.length} tâche(s) affichée(s) sur {projectTasks.length}
+                    {filteredProjectTasks.length} {t('tasksDisplayedOutOf')} {projectTasks.length}
                   </div>
                 )}
                 {allTags.length === 0 && (
                   <div className="text-sm text-gray-500 italic">
-                    Aucun tag disponible. Ajoutez des tags aux tâches pour les filtrer.
+                    {t('noTagsAvailable')}
                   </div>
                 )}
               </div>
 
             {projectTasks.length === 0 ? (
-              <div className="text-center py-12 bg-gray-50 rounded-lg">
+              <div className="text-center py-12 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
                 <ListTodo className="w-12 h-12 text-gray-400 mx-auto mb-3" />
-                <p className="text-gray-600 mb-4">Aucune tâche dans ce projet</p>
+                <p className="text-gray-600 dark:text-gray-300 mb-4">{t('noTasks')}</p>
                 <button
                   onClick={() => setShowTaskForm(true)}
                   className="text-blue-600 hover:underline"
                 >
-                  Créer la première tâche
+                  {t('createFirstTask')}
                 </button>
               </div>
             ) : filteredProjectTasks.length === 0 ? (
-              <div className="text-center py-12 bg-gray-50 rounded-lg">
+              <div className="text-center py-12 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
                 <Tag className="w-12 h-12 text-gray-400 mx-auto mb-3" />
-                <p className="text-gray-600 mb-2">Aucune tâche ne correspond aux tags sélectionnés</p>
+                <p className="text-gray-600 dark:text-gray-300 mb-2">{t('noTasksWithTags')}</p>
                 <button
                   onClick={() => setSelectedTags([])}
                   className="text-blue-600 hover:underline text-sm"
                 >
-                  Réinitialiser les filtres
+                  {t('resetFilters')}
                 </button>
               </div>
             ) : taskViewMode === 'table' ? (
@@ -1056,17 +1058,17 @@ export const ProjectDetailView: React.FC<ProjectDetailViewProps> = ({ projectId,
                     {/* Column Header */}
                     <div className={`px-4 py-3 rounded-t-lg border-2 ${taskStatusConfig[status].color.replace('text-', 'border-')}`}>
                       <div className="flex items-center justify-between">
-                        <span className="font-semibold text-gray-700">
+                        <span className="font-semibold text-gray-700 dark:text-gray-300">
                           {taskStatusConfig[status].label}
                         </span>
-                        <span className="text-sm font-medium text-gray-600 bg-white px-2 py-0.5 rounded-full">
+                        <span className="text-sm font-medium text-gray-600 dark:text-gray-400 bg-white dark:bg-gray-800 px-2 py-0.5 rounded-full">
                           {tasksByStatus(status).length}
                         </span>
                       </div>
                     </div>
 
                     {/* Tasks Column */}
-                    <div className="flex-1 bg-gray-50 rounded-b-lg border-2 border-t-0 border-gray-200 p-3 space-y-3 overflow-y-auto min-h-[400px]">
+                    <div className="flex-1 bg-gray-50 dark:bg-gray-800 rounded-b-lg border-2 border-t-0 border-gray-200 dark:border-gray-700 p-3 space-y-3 overflow-y-auto min-h-[400px]">
                       {tasksByStatus(status).map(task => {
                         const taskTags = parseTaskTags(task);
                         const priorityColors = {
@@ -1081,11 +1083,11 @@ export const ProjectDetailView: React.FC<ProjectDetailViewProps> = ({ projectId,
                             key={task.id}
                             draggable
                             onDragStart={() => handleDragStart(task)}
-                            className="bg-white rounded-lg border border-gray-200 p-3 cursor-move hover:shadow-md transition-shadow group"
+                            className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-3 cursor-move hover:shadow-md transition-shadow group"
                           >
                             {/* Task Header */}
                             <div className="flex items-start justify-between gap-2 mb-2">
-                              <h4 className="font-medium text-gray-900 text-sm line-clamp-2 flex-1">
+                              <h4 className="font-medium text-gray-900 dark:text-white text-sm line-clamp-2 flex-1">
                                 {task.title}
                               </h4>
                               <div className="flex items-center gap-1">
@@ -1100,8 +1102,8 @@ export const ProjectDetailView: React.FC<ProjectDetailViewProps> = ({ projectId,
                                       e.stopPropagation();
                                       handleEditTask(task);
                                     }}
-                                    className="p-1 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded"
-                                    title="Modifier"
+                                    className="p-1 text-gray-400 dark:text-gray-500 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded"
+                                    title={t('edit')}
                                   >
                                     <Edit2 className="w-3 h-3" />
                                   </button>
@@ -1110,8 +1112,8 @@ export const ProjectDetailView: React.FC<ProjectDetailViewProps> = ({ projectId,
                                       e.stopPropagation();
                                       handleDeleteTask(task.id);
                                     }}
-                                    className="p-1 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded"
-                                    title="Supprimer"
+                                    className="p-1 text-gray-400 dark:text-gray-500 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 rounded"
+                                    title={t('delete')}
                                   >
                                     <Trash2 className="w-3 h-3" />
                                   </button>
@@ -1121,7 +1123,7 @@ export const ProjectDetailView: React.FC<ProjectDetailViewProps> = ({ projectId,
 
                             {/* Task Description */}
                             {task.description && (
-                              <p className="text-xs text-gray-600 mb-2 line-clamp-2">
+                              <p className="text-xs text-gray-600 dark:text-gray-400 mb-2 line-clamp-2">
                                 {task.description}
                               </p>
                             )}
@@ -1130,7 +1132,7 @@ export const ProjectDetailView: React.FC<ProjectDetailViewProps> = ({ projectId,
                             <div className="space-y-1.5">
                               {/* Resources */}
                               {getResourceNames(task.id) && (
-                                <div className="flex items-center gap-1.5 text-xs text-gray-600">
+                                <div className="flex items-center gap-1.5 text-xs text-gray-600 dark:text-gray-400">
                                   <Users className="w-3 h-3" />
                                   <span className="truncate">{getResourceNames(task.id)}</span>
                                 </div>
@@ -1138,18 +1140,18 @@ export const ProjectDetailView: React.FC<ProjectDetailViewProps> = ({ projectId,
 
                               {/* Time Estimate */}
                               {task.estimatedHours && (
-                                <div className="flex items-center gap-1.5 text-xs text-gray-600">
+                                <div className="flex items-center gap-1.5 text-xs text-gray-600 dark:text-gray-400">
                                   <Clock className="w-3 h-3" />
                                   <span>{task.estimatedHours}h</span>
                                   {task.actualHours && (
-                                    <span className="text-gray-400">/ {task.actualHours}h</span>
+                                    <span className="text-gray-400 dark:text-gray-500">/ {task.actualHours}h</span>
                                   )}
                                 </div>
                               )}
 
                               {/* Due Date */}
                               {task.endDate && (
-                                <div className="flex items-center gap-1.5 text-xs text-gray-500">
+                                <div className="flex items-center gap-1.5 text-xs text-gray-500 dark:text-gray-400">
                                   <Calendar className="w-3 h-3" />
                                   <span>{new Date(task.endDate).toLocaleDateString('fr-FR')}</span>
                                 </div>
@@ -1176,7 +1178,7 @@ export const ProjectDetailView: React.FC<ProjectDetailViewProps> = ({ projectId,
                       {/* Empty Column State */}
                       {tasksByStatus(status).length === 0 && (
                         <div className="text-center py-8 text-gray-400 text-sm">
-                          Aucune tâche
+                          {t('noTasks')}
                         </div>
                       )}
                     </div>
@@ -1191,37 +1193,37 @@ export const ProjectDetailView: React.FC<ProjectDetailViewProps> = ({ projectId,
         {activeTab === 'milestones' && (
           <div>
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-lg font-semibold text-gray-900">Jalons du projet</h2>
+              <h2 className="text-lg font-semibold text-gray-900 dark:text-white">{t('milestonesOfProject')}</h2>
               <div className="flex items-center gap-2">
                 <button
                   onClick={() => setShowMilestonesImport(true)}
-                  className="flex items-center gap-2 px-4 py-2 bg-white text-blue-600 border border-blue-600 rounded-lg hover:bg-blue-50 transition-colors"
+                  className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-gray-800 text-blue-600 border border-blue-600 dark:border-blue-500 rounded-lg hover:bg-blue-50 dark:hover:bg-blue-900 transition-colors"
                 >
                   <Upload className="w-4 h-4" />
-                  Importer
+                  {t('import')}
                 </button>
                 <button
                   onClick={() => {
                     setEditingMilestone(null);
                     setShowMilestoneForm(true);
                   }}
-                  className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                  className="flex items-center gap-2 px-4 py-2 bg-blue-600 dark:bg-blue-700 text-white rounded-lg hover:bg-blue-700 dark:hover:bg-blue-800 transition-colors"
                 >
                   <Plus className="w-4 h-4" />
-                  Nouveau jalon
+                  {t('newMilestone')}
                 </button>
               </div>
             </div>
 
             {projectMilestones.length === 0 ? (
-              <div className="text-center py-12 bg-gray-50 rounded-lg">
+              <div className="text-center py-12 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
                 <Flag className="w-12 h-12 text-gray-400 mx-auto mb-3" />
-                <p className="text-gray-600 mb-4">Aucun jalon dans ce projet</p>
+                <p className="text-gray-600 dark:text-gray-300 mb-4">{t('noMilestones')}</p>
                 <button
                   onClick={() => setShowMilestoneForm(true)}
                   className="text-blue-600 hover:underline"
                 >
-                  Créer le premier jalon
+                  {t('createFirstMilestone')}
                 </button>
               </div>
             ) : (
@@ -1229,7 +1231,7 @@ export const ProjectDetailView: React.FC<ProjectDetailViewProps> = ({ projectId,
                 {projectMilestones.map(milestone => (
                   <div
                     key={milestone.id}
-                    className="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow"
+                    className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-4 hover:shadow-md transition-shadow"
                   >
                     <div className="flex items-start justify-between">
                       <div className="flex items-start gap-3 flex-1">
@@ -1238,7 +1240,7 @@ export const ProjectDetailView: React.FC<ProjectDetailViewProps> = ({ projectId,
                           style={{ backgroundColor: milestone.color }}
                         />
                         <div className="flex-1">
-                          <h3 className="font-medium text-gray-900 mb-2">{milestone.name}</h3>
+                          <h3 className="font-medium text-gray-900 dark:text-white mb-2">{milestone.name}</h3>
                           {milestone.description && (
                             <p className="text-sm text-gray-600 mb-3">{milestone.description}</p>
                           )}
@@ -1290,62 +1292,62 @@ export const ProjectDetailView: React.FC<ProjectDetailViewProps> = ({ projectId,
           <div>
             <div className="flex items-center justify-between mb-6">
               <div>
-                <h2 className="text-lg font-semibold text-gray-900 mb-1">Structure de Décomposition du Travail (WBS - PMBOK)</h2>
+                <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-1">{t('workBreakdownStructure')}</h2>
                 <p className="text-sm text-gray-600">
-                  Décomposition hiérarchique orientée livrables selon le standard PMI
+                  {t('wbsDescription')}
                 </p>
               </div>
               <div className="flex items-center gap-2">
                 {/* View Mode Toggle */}
-                <div className="flex items-center gap-1 bg-gray-100 rounded-lg p-1">
+                <div className="flex items-center gap-1 bg-gray-100 dark:bg-gray-700 rounded-lg p-1">
                   <button
                     onClick={() => setWbsViewMode('deliverables')}
                     className={`px-3 py-1.5 text-xs font-medium rounded transition-colors ${
                       wbsViewMode === 'deliverables'
-                        ? 'bg-white text-gray-900 shadow-sm'
-                        : 'text-gray-600 hover:text-gray-900'
+                        ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm'
+                        : 'text-gray-600 hover:text-gray-900 dark:hover:text-white'
                     }`}
                   >
-                    Par livrables
+                    {t('byDeliverables')}
                   </button>
                   <button
                     onClick={() => setWbsViewMode('phases')}
                     className={`px-3 py-1.5 text-xs font-medium rounded transition-colors ${
                       wbsViewMode === 'phases'
-                        ? 'bg-white text-gray-900 shadow-sm'
-                        : 'text-gray-600 hover:text-gray-900'
+                        ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm'
+                        : 'text-gray-600 hover:text-gray-900 dark:hover:text-white'
                     }`}
                   >
-                    Par phases
+                    {t('byPhases')}
                   </button>
                 </div>
                 <button
                   onClick={() => setExpandedWbsNodes(new Set(wbsStructure.map(d => d.id)))}
-                  className="px-3 py-1.5 text-sm text-gray-700 border border-gray-300 rounded hover:bg-gray-50 transition-colors"
+                  className="px-3 py-1.5 text-sm text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600 rounded hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
                 >
-                  Tout développer
+                  {t('expandAll')}
                 </button>
                 <button
                   onClick={() => setExpandedWbsNodes(new Set())}
-                  className="px-3 py-1.5 text-sm text-gray-700 border border-gray-300 rounded hover:bg-gray-50 transition-colors"
+                  className="px-3 py-1.5 text-sm text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600 rounded hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
                 >
-                  Tout réduire
+                  {t('collapseAll')}
                 </button>
               </div>
             </div>
 
             {wbsStructure.length === 0 ? (
-              <div className="text-center py-12 bg-gray-50 rounded-lg">
+              <div className="text-center py-12 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
                 <Network className="w-12 h-12 text-gray-400 mx-auto mb-3" />
-                <p className="text-gray-600 mb-2">
+                <p className="text-gray-600 dark:text-gray-300 mb-2">
                   {wbsViewMode === 'deliverables'
-                    ? 'Aucun livrable (jalon) défini'
-                    : 'Aucune tâche dans ce projet'}
+                    ? t('noDeliverablesDefined')
+                    : t('noTasks')}
                 </p>
-                <p className="text-sm text-gray-500">
+                <p className="text-sm text-gray-500 dark:text-gray-400">
                   {wbsViewMode === 'deliverables'
-                    ? 'Créez des jalons pour définir les livrables principaux du projet'
-                    : 'Créez des tâches pour voir la structure WBS par phases'}
+                    ? t('createMilestonesForDeliverables')
+                    : t('createTasksForWbsPhases')}
                 </p>
               </div>
             ) : (
@@ -1354,11 +1356,11 @@ export const ProjectDetailView: React.FC<ProjectDetailViewProps> = ({ projectId,
                 <div className="lg:col-span-2 space-y-4">
                   {/* WBS Info Banner */}
                   <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 text-sm">
-                    <div className="font-semibold text-blue-900 mb-2">Principes WBS PMBOK :</div>
+                    <div className="font-semibold text-blue-900 mb-2">{t('wbsPrinciples')}</div>
                     <ul className="text-blue-800 space-y-1 text-xs">
-                      <li>• <strong>Règle des 100%</strong> : La WBS doit capturer 100% de la portée du projet</li>
-                      <li>• <strong>Focus livrables</strong> : Chaque niveau représente un livrable (résultat/produit), pas une action</li>
-                      <li>• <strong>Packages de travail</strong> : Niveau le plus bas = unité assignable à une personne/équipe</li>
+                      <li>• <strong>{t('rule100')}</strong> : {t('rule100Description')}</li>
+                      <li>• <strong>{t('deliverablesFocus')}</strong> : {t('deliverablesFocusDescription')}</li>
+                      <li>• <strong>{t('workPackages')}</strong> : {t('workPackagesDescription')}</li>
                     </ul>
                   </div>
 
@@ -1370,10 +1372,10 @@ export const ProjectDetailView: React.FC<ProjectDetailViewProps> = ({ projectId,
                       : 0;
 
                     return (
-                      <div key={element.id} className="bg-white border-2 border-gray-300 rounded-lg overflow-hidden">
+                      <div key={element.id} className="bg-white dark:bg-gray-800 border-2 border-gray-300 dark:border-gray-600 rounded-lg overflow-hidden">
                         {/* Deliverable Header */}
                         <div
-                          className="p-4 cursor-pointer hover:bg-gray-50 transition-colors"
+                          className="p-4 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
                           style={{ backgroundColor: element.color ? `${element.color}15` : undefined }}
                           onClick={() => {
                             const newExpanded = new Set(expandedWbsNodes);
@@ -1386,14 +1388,14 @@ export const ProjectDetailView: React.FC<ProjectDetailViewProps> = ({ projectId,
                           }}
                         >
                           <div className="flex items-start gap-3">
-                            <button className="flex-shrink-0 w-6 h-6 flex items-center justify-center rounded hover:bg-white transition-colors">
+                            <button className="flex-shrink-0 w-6 h-6 flex items-center justify-center rounded hover:bg-white dark:hover:bg-gray-700 transition-colors">
                               {isExpanded ? <ChevronDown className="w-5 h-5" /> : <ChevronRight className="w-5 h-5" />}
                             </button>
 
                             <div className="flex-1">
                               <div className="flex items-center gap-3 mb-2">
-                                <span className="font-mono text-sm font-bold text-gray-700">{element.wbsCode}</span>
-                                <h3 className="text-lg font-bold text-gray-900">{element.name}</h3>
+                                <span className="font-mono text-sm font-bold text-gray-700 dark:text-gray-300">{element.wbsCode}</span>
+                                <h3 className="text-lg font-bold text-gray-900 dark:text-white">{element.name}</h3>
                                 {element.type === 'deliverable' && element.status && (
                                   <span className={`px-2 py-0.5 rounded-full text-xs ${milestoneStatusConfig[element.status].color}`}>
                                     {milestoneStatusConfig[element.status].label}
@@ -1402,25 +1404,25 @@ export const ProjectDetailView: React.FC<ProjectDetailViewProps> = ({ projectId,
                               </div>
 
                               {element.description && (
-                                <p className="text-sm text-gray-600 mb-3">{element.description}</p>
+                                <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">{element.description}</p>
                               )}
 
                               <div className="grid grid-cols-4 gap-4 text-sm">
                                 <div>
-                                  <div className="text-gray-600 text-xs">Packages de travail</div>
-                                  <div className="font-semibold text-gray-900">{element.stats.totalTasks}</div>
+                                  <div className="text-gray-600 dark:text-gray-400 text-xs">{t('workPackages')}</div>
+                                  <div className="font-semibold text-gray-900 dark:text-white">{element.stats.totalTasks}</div>
                                 </div>
                                 <div>
-                                  <div className="text-gray-600 text-xs">Heures estimées</div>
-                                  <div className="font-semibold text-gray-900">{element.stats.totalHours}h</div>
+                                  <div className="text-gray-600 dark:text-gray-400 text-xs">{t('estimatedHours')}</div>
+                                  <div className="font-semibold text-gray-900 dark:text-white">{element.stats.totalHours}h</div>
                                 </div>
                                 <div>
-                                  <div className="text-gray-600 text-xs">Complétées</div>
-                                  <div className="font-semibold text-green-600">{element.stats.completedTasks}/{element.stats.totalTasks}</div>
+                                  <div className="text-gray-600 dark:text-gray-400 text-xs">{t('completed')}</div>
+                                  <div className="font-semibold text-green-600 dark:text-green-400">{element.stats.completedTasks}/{element.stats.totalTasks}</div>
                                 </div>
                                 <div>
-                                  <div className="text-gray-600 text-xs">Progression</div>
-                                  <div className="font-semibold text-blue-600">{completionRate}%</div>
+                                  <div className="text-gray-600 dark:text-gray-400 text-xs">{t('progress')}</div>
+                                  <div className="font-semibold text-blue-600 dark:text-blue-400">{completionRate}%</div>
                                 </div>
                               </div>
 
@@ -1436,7 +1438,7 @@ export const ProjectDetailView: React.FC<ProjectDetailViewProps> = ({ projectId,
                               {element.targetDate && (
                                 <div className="mt-2 flex items-center gap-1 text-xs text-gray-600">
                                   <Calendar className="w-3 h-3" />
-                                  Date cible: {new Date(element.targetDate).toLocaleDateString('fr-FR')}
+                                  {t('targetDate')}: {new Date(element.targetDate).toLocaleDateString('fr-FR')}
                                 </div>
                               )}
                             </div>
@@ -1448,41 +1450,41 @@ export const ProjectDetailView: React.FC<ProjectDetailViewProps> = ({ projectId,
                               }}
                               className="flex-shrink-0 px-3 py-1 text-xs text-blue-600 border border-blue-600 rounded hover:bg-blue-50"
                             >
-                              Dictionnaire
+                              {t('dictionary')}
                             </button>
                           </div>
                         </div>
 
                         {/* Work Packages (Tasks) */}
                         {isExpanded && element.tasks.length > 0 && (
-                          <div className="border-t border-gray-200 bg-gray-50 p-4">
-                            <h4 className="text-sm font-semibold text-gray-700 mb-3">Packages de travail :</h4>
+                          <div className="border-t border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 p-4">
+                            <h4 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">{t('workPackages')}:</h4>
                             <div className="space-y-2">
                               {element.tasks.map((task: any, idx: number) => {
                                 const taskTags = parseTaskTags(task);
                                 return (
                                   <div
                                     key={task.id}
-                                    className="bg-white border border-gray-200 rounded p-3 text-sm"
+                                    className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded p-3 text-sm"
                                   >
                                     <div className="flex items-start justify-between">
                                       <div className="flex-1">
                                         <div className="flex items-center gap-2 mb-1">
-                                          <span className="font-mono text-xs font-semibold text-gray-600">
+                                          <span className="font-mono text-xs font-semibold text-gray-600 dark:text-gray-400">
                                             {element.wbsCode}.{idx + 1}
                                           </span>
-                                          <span className="font-medium text-gray-900">{task.title}</span>
+                                          <span className="font-medium text-gray-900 dark:text-white">{task.title}</span>
                                           <span className={`px-2 py-0.5 rounded-full text-xs ${taskStatusConfig[task.status].color}`}>
                                             {taskStatusConfig[task.status].label}
                                           </span>
                                         </div>
                                         {task.description && (
-                                          <p className="text-xs text-gray-600 mb-2">{task.description}</p>
+                                          <p className="text-xs text-gray-600 dark:text-gray-400 mb-2">{task.description}</p>
                                         )}
                                         {taskTags.length > 0 && (
                                           <div className="flex flex-wrap gap-1">
                                             {taskTags.map((tag, tidx) => (
-                                              <span key={tidx} className="inline-flex items-center gap-1 px-2 py-0.5 bg-blue-100 text-blue-700 text-xs rounded-full">
+                                              <span key={tidx} className="inline-flex items-center gap-1 px-2 py-0.5 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 text-xs rounded-full">
                                                 <Tag className="w-3 h-3" />
                                                 {tag}
                                               </span>
@@ -1491,9 +1493,9 @@ export const ProjectDetailView: React.FC<ProjectDetailViewProps> = ({ projectId,
                                         )}
                                       </div>
                                       <div className="text-right text-xs">
-                                        <div className="text-gray-900 font-semibold">{task.estimatedHours || 0}h</div>
+                                        <div className="text-gray-900 dark:text-white font-semibold">{task.estimatedHours || 0}h</div>
                                         {getResourceNames(task.id) && (
-                                          <div className="text-gray-600 mt-1">{getResourceNames(task.id)}</div>
+                                          <div className="text-gray-600 dark:text-gray-400 mt-1">{getResourceNames(task.id)}</div>
                                         )}
                                       </div>
                                     </div>
@@ -1510,48 +1512,48 @@ export const ProjectDetailView: React.FC<ProjectDetailViewProps> = ({ projectId,
 
                 {/* WBS Dictionary Sidebar */}
                 <div className="space-y-4">
-                  <div className="bg-white border border-gray-200 rounded-lg p-4 sticky top-4">
-                    <h3 className="font-semibold text-gray-900 mb-3 flex items-center gap-2">
+                  <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-4 sticky top-4">
+                    <h3 className="font-semibold text-gray-900 dark:text-white mb-3 flex items-center gap-2">
                       <Flag className="w-4 h-4" />
-                      Dictionnaire WBS
+                      {t('wbsDictionary')}
                     </h3>
 
                     {selectedWbsElement ? (
                       (() => {
                         const element = wbsStructure.find(d => d.id === selectedWbsElement);
-                        if (!element) return <p className="text-sm text-gray-500">Élément non trouvé</p>;
+                        if (!element) return <p className="text-sm text-gray-500">{t('elementNotFound')}</p>;
 
                         return (
                           <div className="space-y-3 text-sm">
                             <div>
-                              <div className="text-xs font-semibold text-gray-600 mb-1">Code WBS</div>
+                              <div className="text-xs font-semibold text-gray-600 mb-1">{t('wbsCode')}</div>
                               <div className="font-mono font-semibold">{element.wbsCode}</div>
                             </div>
                             <div>
-                              <div className="text-xs font-semibold text-gray-600 mb-1">Nom du livrable</div>
+                              <div className="text-xs font-semibold text-gray-600 mb-1">{t('deliverableName')}</div>
                               <div className="font-semibold">{element.name}</div>
                             </div>
                             <div>
-                              <div className="text-xs font-semibold text-gray-600 mb-1">Description</div>
-                              <div className="text-gray-700">{element.description || 'Aucune description'}</div>
+                              <div className="text-xs font-semibold text-gray-600 mb-1">{t('description')}</div>
+                              <div className="text-gray-700 dark:text-gray-300">{element.description || t('noDescription')}</div>
                             </div>
                             <div className="border-t border-gray-200 pt-3">
-                              <div className="text-xs font-semibold text-gray-600 mb-2">Métriques</div>
+                              <div className="text-xs font-semibold text-gray-600 mb-2">{t('metrics')}</div>
                               <div className="space-y-1">
                                 <div className="flex justify-between">
-                                  <span className="text-gray-600">Packages:</span>
+                                  <span className="text-gray-600">{t('packages')}:</span>
                                   <span className="font-medium">{element.stats.totalTasks}</span>
                                 </div>
                                 <div className="flex justify-between">
-                                  <span className="text-gray-600">Heures:</span>
+                                  <span className="text-gray-600">{t('hours')}:</span>
                                   <span className="font-medium">{element.stats.totalHours}h</span>
                                 </div>
                                 <div className="flex justify-between">
-                                  <span className="text-gray-600">Complétées:</span>
+                                  <span className="text-gray-600">{t('completed')}:</span>
                                   <span className="font-medium">{element.stats.completedTasks}/{element.stats.totalTasks}</span>
                                 </div>
                                 <div className="flex justify-between">
-                                  <span className="text-gray-600">Progression:</span>
+                                  <span className="text-gray-600">{t('progress')}:</span>
                                   <span className="font-medium">
                                     {Math.round((element.stats.completedTasks / Math.max(1, element.stats.totalTasks)) * 100)}%
                                   </span>
@@ -1560,16 +1562,16 @@ export const ProjectDetailView: React.FC<ProjectDetailViewProps> = ({ projectId,
                             </div>
                             {element.targetDate && (
                               <div className="border-t border-gray-200 pt-3">
-                                <div className="text-xs font-semibold text-gray-600 mb-1">Date cible</div>
+                                <div className="text-xs font-semibold text-gray-600 mb-1">{t('targetDate')}</div>
                                 <div>{new Date(element.targetDate).toLocaleDateString('fr-FR', {
                                   weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
                                 })}</div>
                               </div>
                             )}
                             <div className="border-t border-gray-200 pt-3">
-                              <div className="text-xs font-semibold text-gray-600 mb-1">Critères d'acceptation</div>
-                              <div className="text-gray-700">
-                                Tous les packages de travail doivent être complétés et validés
+                              <div className="text-xs font-semibold text-gray-600 mb-1">{t('acceptanceCriteria')}</div>
+                              <div className="text-gray-700 dark:text-gray-300">
+                                {t('allWorkPackagesMustBeCompleted')}
                               </div>
                             </div>
                           </div>
@@ -1577,34 +1579,34 @@ export const ProjectDetailView: React.FC<ProjectDetailViewProps> = ({ projectId,
                       })()
                     ) : (
                       <p className="text-sm text-gray-500">
-                        Cliquez sur "Dictionnaire" d'un livrable pour voir ses détails
+                        {t('clickDictionaryToSeeDetails')}
                       </p>
                     )}
                   </div>
 
                   {/* Règle des 100% */}
                   <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-                    <h4 className="font-semibold text-green-900 mb-2 text-sm">Règle des 100%</h4>
+                    <h4 className="font-semibold text-green-900 mb-2 text-sm">{t('rule100')}</h4>
                     <div className="text-xs text-green-800 space-y-2">
                       <div className="flex justify-between">
-                        <span>Livrables définis:</span>
+                        <span>{t('definedDeliverables')}:</span>
                         <span className="font-semibold">{wbsStructure.length}</span>
                       </div>
                       <div className="flex justify-between">
-                        <span>Packages totaux:</span>
+                        <span>{t('totalPackages')}:</span>
                         <span className="font-semibold">
                           {wbsStructure.reduce((sum, d) => sum + d.stats.totalTasks, 0)}
                         </span>
                       </div>
                       <div className="flex justify-between">
-                        <span>Heures capturées:</span>
+                        <span>{t('capturedHours')}:</span>
                         <span className="font-semibold">
                           {wbsStructure.reduce((sum, d) => sum + d.stats.totalHours, 0)}h
                         </span>
                       </div>
                       <div className="pt-2 border-t border-green-300">
                         <div className="flex justify-between font-semibold">
-                          <span>Couverture portée:</span>
+                          <span>{t('scopeCoverage')}:</span>
                           <span className="text-green-700">
                             {projectTasks.length > 0 ? '100%' : '0%'}
                           </span>
@@ -1622,15 +1624,15 @@ export const ProjectDetailView: React.FC<ProjectDetailViewProps> = ({ projectId,
         {activeTab === 'resources' && (
           <div>
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-lg font-semibold text-gray-900">Ressources assignées au projet</h2>
+              <h2 className="text-lg font-semibold text-gray-900 dark:text-white">{t('assignedResources')}</h2>
             </div>
 
             {projectResources.length === 0 ? (
-              <div className="text-center py-12 bg-gray-50 rounded-lg">
+              <div className="text-center py-12 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
                 <Users className="w-12 h-12 text-gray-400 mx-auto mb-3" />
-                <p className="text-gray-600">Aucune ressource assignée à ce projet</p>
-                <p className="text-sm text-gray-500 mt-2">
-                  Assignez des ressources aux tâches pour les voir ici
+                <p className="text-gray-600 dark:text-gray-300">{t('noAssignedResources')}</p>
+                <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">
+                  {t('assignResourcesToTasks')}
                 </p>
               </div>
             ) : (
@@ -1643,7 +1645,7 @@ export const ProjectDetailView: React.FC<ProjectDetailViewProps> = ({ projectId,
                   return (
                     <div
                       key={resource.id}
-                      className="bg-white border border-gray-200 rounded-lg p-4"
+                      className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-4"
                     >
                       <div className="flex items-center gap-3 mb-3">
                         <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
@@ -1652,14 +1654,14 @@ export const ProjectDetailView: React.FC<ProjectDetailViewProps> = ({ projectId,
                           </span>
                         </div>
                         <div>
-                          <h3 className="font-medium text-gray-900">{resource.name}</h3>
+                          <h3 className="font-medium text-gray-900 dark:text-white">{resource.name}</h3>
                           {resource.role && (
                             <p className="text-sm text-gray-600">{resource.role}</p>
                           )}
                         </div>
                       </div>
                       <div className="text-sm text-gray-600">
-                        {assignedTasks.length} tâche(s) assignée(s)
+                        {assignedTasks.length} {assignedTasks.length > 1 ? t('assignedTasks') : t('assignedTask')}
                       </div>
                     </div>
                   );
@@ -1672,25 +1674,25 @@ export const ProjectDetailView: React.FC<ProjectDetailViewProps> = ({ projectId,
         {/* Activity Tab */}
         {activeTab === 'activity' && (
           <div>
-            <h2 className="text-lg font-semibold text-gray-900 mb-6">Activité du projet</h2>
+            <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-6">{t('projectActivity')}</h2>
 
             {isLoadingActivity ? (
               <div className="text-center py-12">
-                <p className="text-gray-500">Chargement...</p>
+                <p className="text-gray-500">{t('loading')}</p>
               </div>
             ) : (
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 {/* Main Column - Timeline & Comments */}
                 <div className="lg:col-span-2 space-y-6">
                   {/* Timeline Section */}
-                  <div className="bg-white border border-gray-200 rounded-lg p-4">
+                  <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-4">
                     <div className="flex items-center gap-2 mb-4">
                       <Clock className="w-5 h-5 text-gray-600" />
-                      <h3 className="font-semibold text-gray-900">Chronologie des événements</h3>
+                      <h3 className="font-semibold text-gray-900 dark:text-white">{t('eventsTimeline')}</h3>
                     </div>
 
                     {activityLogs.length === 0 ? (
-                      <p className="text-sm text-gray-500 text-center py-8">Aucune activité enregistrée</p>
+                      <p className="text-sm text-gray-500 text-center py-8">{t('noActivityRecorded')}</p>
                     ) : (
                       <div className="space-y-3">
                         {activityLogs.map((log) => {
@@ -1701,15 +1703,15 @@ export const ProjectDetailView: React.FC<ProjectDetailViewProps> = ({ projectId,
                                 <Activity className="w-4 h-4 text-blue-600" />
                               </div>
                               <div className="flex-1 min-w-0">
-                                <p className="text-sm text-gray-900">
-                                  <span className="font-medium">{log.author || 'Système'}</span>
+                                <p className="text-sm text-gray-900 dark:text-white">
+                                  <span className="font-medium">{log.author || t('system')}</span>
                                   {' '}
                                   {log.action === 'status_changed' && changes && (
-                                    <>a changé le statut de <span className="font-medium">{changes.old_status}</span> à <span className="font-medium">{changes.new_status}</span></>
+                                    <>{t('changedStatusFrom')} <span className="font-medium">{changes.old_status}</span> {t('to')} <span className="font-medium">{changes.new_status}</span></>
                                   )}
-                                  {log.action === 'created' && `a créé ${log.entityType === 'task' ? 'une tâche' : log.entityType === 'milestone' ? 'un jalon' : 'un élément'}`}
-                                  {log.action === 'updated' && `a modifié ${log.entityType === 'task' ? 'une tâche' : log.entityType === 'milestone' ? 'un jalon' : 'un élément'}`}
-                                  {log.action === 'deleted' && `a supprimé ${log.entityType === 'task' ? 'une tâche' : log.entityType === 'milestone' ? 'un jalon' : 'un élément'}`}
+                                  {log.action === 'created' && `${t('created')} ${log.entityType === 'task' ? t('aTask') : log.entityType === 'milestone' ? t('aMilestone') : t('anElement')}`}
+                                  {log.action === 'updated' && `${t('updated')} ${log.entityType === 'task' ? t('aTask') : log.entityType === 'milestone' ? t('aMilestone') : t('anElement')}`}
+                                  {log.action === 'deleted' && `${t('deleted')} ${log.entityType === 'task' ? t('aTask') : log.entityType === 'milestone' ? t('aMilestone') : t('anElement')}`}
                                 </p>
                                 <p className="text-xs text-gray-500 mt-1">
                                   {new Date(log.createdAt).toLocaleString('fr-FR')}
@@ -1723,26 +1725,26 @@ export const ProjectDetailView: React.FC<ProjectDetailViewProps> = ({ projectId,
                   </div>
 
                   {/* Comments Section */}
-                  <div className="bg-white border border-gray-200 rounded-lg p-4">
+                  <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-4">
                     <div className="flex items-center gap-2 mb-4">
                       <MessageSquare className="w-5 h-5 text-gray-600" />
-                      <h3 className="font-semibold text-gray-900">Commentaires & Notes</h3>
+                      <h3 className="font-semibold text-gray-900 dark:text-white">{t('commentsAndNotes')}</h3>
                     </div>
 
                     {/* Comment List */}
                     <div className="space-y-3 mb-4 max-h-96 overflow-y-auto">
                       {projectComments.length === 0 ? (
-                        <p className="text-sm text-gray-500 text-center py-8">Aucun commentaire</p>
+                        <p className="text-sm text-gray-500 text-center py-8">{t('noComments')}</p>
                       ) : (
                         projectComments.map((comment) => (
-                          <div key={comment.id} className="bg-gray-50 rounded-lg p-3">
+                          <div key={comment.id} className="bg-gray-50 dark:bg-gray-700 rounded-lg p-3">
                             <div className="flex items-start justify-between mb-2">
-                              <span className="font-medium text-sm text-gray-900">{comment.author}</span>
-                              <span className="text-xs text-gray-500">
+                              <span className="font-medium text-sm text-gray-900 dark:text-white">{comment.author}</span>
+                              <span className="text-xs text-gray-500 dark:text-gray-400">
                                 {new Date(comment.createdAt).toLocaleString('fr-FR')}
                               </span>
                             </div>
-                            <p className="text-sm text-gray-700 whitespace-pre-wrap">{comment.content}</p>
+                            <p className="text-sm text-gray-700 dark:text-gray-300 whitespace-pre-wrap">{comment.content}</p>
                           </div>
                         ))
                       )}
@@ -1753,7 +1755,7 @@ export const ProjectDetailView: React.FC<ProjectDetailViewProps> = ({ projectId,
                       <textarea
                         value={newComment}
                         onChange={(e) => setNewComment(e.target.value)}
-                        placeholder="Ajouter un commentaire ou une note..."
+                        placeholder={t('addCommentPlaceholder')}
                         className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
                         rows={3}
                         onKeyDown={(e) => {
@@ -1769,7 +1771,7 @@ export const ProjectDetailView: React.FC<ProjectDetailViewProps> = ({ projectId,
                           className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                           <Send className="w-4 h-4" />
-                          Envoyer
+                          {t('send')}
                         </button>
                       </div>
                     </div>
@@ -1779,17 +1781,17 @@ export const ProjectDetailView: React.FC<ProjectDetailViewProps> = ({ projectId,
                 {/* Sidebar - Statistics */}
                 <div className="space-y-6">
                   {/* Statistics Overview */}
-                  <div className="bg-white border border-gray-200 rounded-lg p-4">
+                  <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-4">
                     <div className="flex items-center gap-2 mb-4">
                       <TrendingUp className="w-5 h-5 text-gray-600" />
-                      <h3 className="font-semibold text-gray-900">Statistiques</h3>
+                      <h3 className="font-semibold text-gray-900 dark:text-white">{t('statistics')}</h3>
                     </div>
 
                     <div className="space-y-4">
                       {/* Task Stats */}
                       <div>
                         <div className="flex items-center justify-between mb-2">
-                          <span className="text-sm font-medium text-gray-700">Tâches</span>
+                          <span className="text-sm font-medium text-gray-700 dark:text-gray-300">{t('tasks')}</span>
                           <span className="text-sm text-gray-600">{projectStats.completedTasks}/{projectStats.totalTasks}</span>
                         </div>
                         <div className="w-full bg-gray-200 rounded-full h-2">
@@ -1798,18 +1800,18 @@ export const ProjectDetailView: React.FC<ProjectDetailViewProps> = ({ projectId,
                             style={{ width: `${projectStats.completionRate}%` }}
                           />
                         </div>
-                        <p className="text-xs text-gray-500 mt-1">{projectStats.completionRate}% complété</p>
+                        <p className="text-xs text-gray-500 mt-1">{projectStats.completionRate}% {t('completedLowercase')}</p>
                       </div>
 
                       {/* Task Breakdown */}
                       <div className="grid grid-cols-2 gap-2">
-                        <div className="bg-blue-50 rounded-lg p-2">
-                          <div className="text-xs text-blue-600 mb-1">En cours</div>
-                          <div className="text-lg font-semibold text-blue-700">{projectStats.inProgressTasks}</div>
+                        <div className="bg-blue-50 dark:bg-blue-900/30 rounded-lg p-2">
+                          <div className="text-xs text-blue-600 dark:text-blue-400 mb-1">{t('inProgress')}</div>
+                          <div className="text-lg font-semibold text-blue-700 dark:text-blue-300">{projectStats.inProgressTasks}</div>
                         </div>
-                        <div className="bg-gray-50 rounded-lg p-2">
-                          <div className="text-xs text-gray-600 mb-1">À faire</div>
-                          <div className="text-lg font-semibold text-gray-700">{projectStats.todoTasks}</div>
+                        <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-2">
+                          <div className="text-xs text-gray-600 dark:text-gray-400 mb-1">{t('toDo')}</div>
+                          <div className="text-lg font-semibold text-gray-700 dark:text-gray-300">{projectStats.todoTasks}</div>
                         </div>
                       </div>
 
@@ -1817,7 +1819,7 @@ export const ProjectDetailView: React.FC<ProjectDetailViewProps> = ({ projectId,
                       {projectStats.totalMilestones > 0 && (
                         <div>
                           <div className="flex items-center justify-between mb-2">
-                            <span className="text-sm font-medium text-gray-700">Jalons</span>
+                            <span className="text-sm font-medium text-gray-700 dark:text-gray-300">{t('milestones')}</span>
                             <span className="text-sm text-gray-600">{projectStats.achievedMilestones}/{projectStats.totalMilestones}</span>
                           </div>
                           <div className="w-full bg-gray-200 rounded-full h-2">
@@ -1826,14 +1828,14 @@ export const ProjectDetailView: React.FC<ProjectDetailViewProps> = ({ projectId,
                               style={{ width: `${projectStats.milestonesRate}%` }}
                             />
                           </div>
-                          <p className="text-xs text-gray-500 mt-1">{projectStats.milestonesRate}% atteints</p>
+                          <p className="text-xs text-gray-500 mt-1">{projectStats.milestonesRate}% {t('achieved')}</p>
                         </div>
                       )}
 
                       {/* Project Progress */}
                       <div className="border-t border-gray-200 pt-4">
                         <div className="flex items-center justify-between mb-2">
-                          <span className="text-sm font-medium text-gray-700">Progression globale</span>
+                          <span className="text-sm font-medium text-gray-700 dark:text-gray-300">{t('overallProgress')}</span>
                           <span className="text-sm text-gray-600">{projectStats.completionRate}%</span>
                         </div>
                         <div className="w-full bg-gray-200 rounded-full h-3">
@@ -1850,34 +1852,34 @@ export const ProjectDetailView: React.FC<ProjectDetailViewProps> = ({ projectId,
                   </div>
 
                   {/* Quick Info */}
-                  <div className="bg-white border border-gray-200 rounded-lg p-4">
-                    <h3 className="font-semibold text-gray-900 mb-3 text-sm">Informations</h3>
+                  <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-4">
+                    <h3 className="font-semibold text-gray-900 dark:text-white mb-3 text-sm">{t('information')}</h3>
                     <div className="space-y-2 text-sm">
                       <div className="flex justify-between">
-                        <span className="text-gray-600">Statut:</span>
+                        <span className="text-gray-600">{t('status')}:</span>
                         <span className={`px-2 py-0.5 rounded-full text-xs ${statusConfig[project.status].color}`}>
                           {statusConfig[project.status].label}
                         </span>
                       </div>
                       {project.startDate && (
                         <div className="flex justify-between">
-                          <span className="text-gray-600">Début:</span>
-                          <span className="text-gray-900">{new Date(project.startDate).toLocaleDateString('fr-FR')}</span>
+                          <span className="text-gray-600">{t('start')}:</span>
+                          <span className="text-gray-900 dark:text-white">{new Date(project.startDate).toLocaleDateString('fr-FR')}</span>
                         </div>
                       )}
                       {project.endDate && (
                         <div className="flex justify-between">
-                          <span className="text-gray-600">Fin:</span>
-                          <span className="text-gray-900">{new Date(project.endDate).toLocaleDateString('fr-FR')}</span>
+                          <span className="text-gray-600">{t('end')}:</span>
+                          <span className="text-gray-900 dark:text-white">{new Date(project.endDate).toLocaleDateString('fr-FR')}</span>
                         </div>
                       )}
                       <div className="flex justify-between">
-                        <span className="text-gray-600">Créé:</span>
-                        <span className="text-gray-900">{new Date(project.createdAt).toLocaleDateString('fr-FR')}</span>
+                        <span className="text-gray-600">{t('created')}:</span>
+                        <span className="text-gray-900 dark:text-white">{new Date(project.createdAt).toLocaleDateString('fr-FR')}</span>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-gray-600">Modifié:</span>
-                        <span className="text-gray-900">{new Date(project.updatedAt).toLocaleDateString('fr-FR')}</span>
+                        <span className="text-gray-600">{t('modified')}:</span>
+                        <span className="text-gray-900 dark:text-white">{new Date(project.updatedAt).toLocaleDateString('fr-FR')}</span>
                       </div>
                     </div>
                   </div>

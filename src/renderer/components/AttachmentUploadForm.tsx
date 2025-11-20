@@ -65,13 +65,13 @@ export const AttachmentUploadForm: React.FC<AttachmentUploadFormProps> = ({
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-lg max-w-md w-full">
+      <div className="bg-white dark:bg-gray-800 rounded-lg max-w-md w-full">
         {/* Header */}
-        <div className="flex items-center justify-between p-4 border-b border-gray-200">
-          <h2 className="text-lg font-semibold text-gray-900">Ajouter une pièce jointe</h2>
+        <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
+          <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Ajouter une pièce jointe</h2>
           <button
             onClick={onClose}
-            className="p-1 text-gray-400 hover:text-gray-600 rounded transition-colors"
+            className="p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 rounded transition-colors"
             disabled={isUploading}
           >
             <X className="w-5 h-5" />
@@ -82,7 +82,7 @@ export const AttachmentUploadForm: React.FC<AttachmentUploadFormProps> = ({
         <form onSubmit={handleSubmit} className="p-4 space-y-4">
           {/* File Selection */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
               Fichier <span className="text-red-500">*</span>
             </label>
 
@@ -91,25 +91,25 @@ export const AttachmentUploadForm: React.FC<AttachmentUploadFormProps> = ({
                 type="button"
                 onClick={handleSelectFile}
                 disabled={isUploading}
-                className="w-full border-2 border-dashed border-gray-300 rounded-lg p-8 hover:border-blue-400 hover:bg-blue-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-8 hover:border-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                <div className="flex flex-col items-center gap-2 text-gray-500">
+                <div className="flex flex-col items-center gap-2 text-gray-500 dark:text-gray-400">
                   <Upload className="w-8 h-8" />
                   <span className="text-sm font-medium">Cliquez pour sélectionner un fichier</span>
                   <span className="text-xs">Tous types de fichiers acceptés</span>
                 </div>
               </button>
             ) : (
-              <div className="border border-gray-300 rounded-lg p-4">
+              <div className="border border-gray-300 dark:border-gray-600 rounded-lg p-4">
                 <div className="flex items-center gap-3">
                   <div className="flex-shrink-0">
-                    <File className="w-8 h-8 text-gray-600" />
+                    <File className="w-8 h-8 text-gray-600 dark:text-gray-400" />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <div className="font-medium text-gray-900 text-sm truncate">
+                    <div className="font-medium text-gray-900 dark:text-white text-sm truncate">
                       {selectedFile.name}
                     </div>
-                    <div className="text-xs text-gray-500">
+                    <div className="text-xs text-gray-500 dark:text-gray-400">
                       {formatFileSize(selectedFile.size)}
                     </div>
                   </div>
@@ -128,8 +128,8 @@ export const AttachmentUploadForm: React.FC<AttachmentUploadFormProps> = ({
           </div>
 
           {/* Info Message */}
-          <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
-            <p className="text-xs text-blue-700">
+          <div className="bg-blue-50 dark:bg-blue-900 border border-blue-200 dark:border-blue-700 rounded-lg p-3">
+            <p className="text-xs text-blue-700 dark:text-blue-300">
               Le fichier sera copié dans le dossier de données de l'application et restera accessible même si le fichier original est déplacé ou supprimé.
             </p>
           </div>
@@ -139,7 +139,7 @@ export const AttachmentUploadForm: React.FC<AttachmentUploadFormProps> = ({
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+              className="px-4 py-2 text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
               disabled={isUploading}
             >
               Annuler

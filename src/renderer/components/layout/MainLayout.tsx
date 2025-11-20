@@ -9,6 +9,7 @@ import { GanttView } from '../../views/GanttView';
 import { MilestonesView } from '../../views/MilestonesView';
 import { ResourcesView } from '../../views/ResourcesView';
 import { WorkloadView } from '../../views/WorkloadView';
+import { SettingsView } from '../../views/SettingsView';
 
 const MainLayout: React.FC = () => {
   const [currentView, setCurrentView] = useState('dashboard');
@@ -90,6 +91,15 @@ const MainLayout: React.FC = () => {
           </div>
         );
 
+      case 'settings':
+        return (
+          <div className="h-full">
+            <div className="max-w-7xl mx-auto h-full">
+              <SettingsView />
+            </div>
+          </div>
+        );
+
       case 'dashboard':
       default:
         return (
@@ -103,7 +113,7 @@ const MainLayout: React.FC = () => {
   };
 
   return (
-    <div className="flex h-screen bg-background overflow-hidden">
+    <div className="flex h-screen bg-background dark:bg-gray-900 overflow-hidden">
       <Sidebar currentView={currentView} onViewChange={handleViewChange} />
 
       <div className="flex-1 flex flex-col overflow-hidden">
