@@ -1,7 +1,7 @@
 {
   "name": "elegpm",
   "productName": "ElegPM",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Application desktop de gestion de projet inspirée de Linear",
   "main": ".webpack/main",
   "scripts": {

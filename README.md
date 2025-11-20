@@ -15,9 +15,9 @@
 
 <div align="center">
 
-### [⬇️ Télécharger pour Linux (101 MB)](https://github.com/ElegAlex/ElegPM/releases/download/v1.0.0/ElegPM-linux-x64-1.0.0.zip)
+### [⬇️ Télécharger pour Linux (101 MB)](https://github.com/ElegAlex/ElegPM/releases/download/v1.0.1/ElegPM-linux-x64-1.0.0.zip)
 
-### [⬇️ Télécharger pour Windows (105 MB)](https://github.com/ElegAlex/ElegPM/releases/download/v1.0.0/ElegPM-win32-x64-1.0.0.zip)
+### [⬇️ Télécharger pour Windows (105 MB)](https://github.com/ElegAlex/ElegPM/releases/download/v1.0.1/ElegPM-win32-x64-1.0.0.zip)
 
 **ou voir toutes les versions →** [GitHub Releases](https://github.com/ElegAlex/ElegPM/releases)
 
@@ -309,7 +309,7 @@ Construit avec des technologies web modernes et inspiré par la philosophie de d
 
 ---
 
-**Version** : 1.0.0
+**Version** : 1.0.1
 **Dernière mise à jour** : Novembre 2025
 
 ---
